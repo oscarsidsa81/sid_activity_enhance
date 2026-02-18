@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <data>
+
+    <!-- Search: añade agrupaciones y campos (export OV - Varios, id 2343) -->
+    <record id="view_sale_activity_search_ov" model="ir.ui.view">
+      <field name="name">sid.sale.activity.search.ov</field>
+      <field name="model">sale.activity</field>
+      <field name="inherit_id" ref="oct_so_line_info.view_activity_search"/>
+      <field name="arch" type="xml">
+        <xpath expr="//filter[@name='group_sale_order_id']" position="after">
+          <filter name="group_type" string="Type" context="{'group_by': 'type'}"/>
+          <filter name="group_stage" string="Status" context="{'group_by': 'stage'}"/>
+          <filter name="group_sale_order" string="Sale order" context="{'group_by': 'sale_order_id'}"/>
+          <filter name="group_picking_type" string="Operation to raise warning" context="{'group_by': 'picking_type_id'}"/>
+          <filter name="group_product_category" string="Product Category" context="{'group_by': 'product_category'}"/>
+          <filter name="group_date" string="Date" context="{'group_by': 'date'}"/>
+          <filter name="group_user" string="Responsible" context="{'group_by': 'user_id'}"/>
+          <filter name="group_expected_date" string="Expected Date" context="{'group_by': 'expected_date'}"/>
+
+          <!-- Campos en búsqueda -->
+          <field name="sale_order_id"/>
+          <field name="x_item"/>
+          <field name="production_lot_ids"/>
+          <field name="product_id"/>
+          <field name="type"/>
+          <field name="product_category"/>
+          <field name="description"/>
+          <field name="sale_line_route"/>
+          <field name="user_id"/>
+          <field name="so_status"/>
+          <field name="stage"/>
+        </xpath>
+      </field>
+    </record>
+
+    <!-- Tree: columnas, decoraciones y opciones (export OV - Activities, id 2333) -->
+    <record id="view_sale_activity_tree_ov" model="ir.ui.view">
+      <field name="name">sid.sale.activity.tree.ov</field>
+      <field name="model">sale.activity</field>
+      <field name="inherit_id" ref="oct_so_line_info.view_activity_tree"/>
+      <field name="arch" type="xml">
+        <xpath expr="//field[@name='picking_type_id']" position="before">
+          <field name="so_status" string="Estado del Pedido" optional="hide"/>
+          <xpath expr="//field[@name='sale_order_id']" position="move"/>
+          <field name="purchase_order_id" widget="many2one" string="Compra" optional="show"/>
+          <field name="stage" optional="show"/>
+          <field name="type" expand="1" optional="show"/>
+          <field name="x_item" optional="show"/>
+          <field name="x_desc_sale_line" optional="show"/>
+          <field name="description" optional="show" widget="text"/>
+          <field name="user_id" optional="show"/>
+          <xpath expr="//field[@name='user_id']" position="move"/>
+          <field name="sale_line_route" optional="show" string="Ruta"/>
+          <field name="x_fecha_venta" widget="remaining_days" optional="show"/>
+          <field name="expected_date" string="Fecha Esperada" optional="show"/>
+          <field name="x_peso" optional="show"/>
+          <field name="x_qty" optional="show"/>
+          <field name="x_peso_total" optional="show"/>
+        </xpath>
+
+        <xpath expr="//tree[1]" position="attributes">
+          <attribute name="multi_edit">true</attribute>
+        </xpath>
+
+        <xpath expr="//field[@name='so_status']" position="before">
+          <field name="create_date" optional="show" string="Fecha creación" widget="date"/>
+        </xpath>
+
+        <xpath expr="//field[@name='stage']" position="attributes">
+          <attribute name="decoration-danger">stage == 'todo'</attribute>
+          <attribute name="decoration-info">stage == 'pending'</attribute>
+          <attribute name="decoration-success">stage == 'done'</attribute>
+          <attribute name="decoration-bf">1</attribute>
+          <attribute name="widget">badge</attribute>
+        </xpath>
+
+        <xpath expr="//field[@name='sale_line_route']" position="after">
+          <field name="date" optional="show"/>
+        </xpath>
+
+        <xpath expr="//field[@name='sale_order_id']" position="attributes">
+          <attribute name="widget">many2one</attribute>
+          <attribute name="string">Venta</attribute>
+        </xpath>
+
+        <xpath expr="//tree[1]" position="attributes">
+          <attribute name="expand">1</attribute>
+          <attribute name="default_order">stage desc, create_date asc</attribute>
+          <attribute name="delete">true</attribute>
+        </xpath>
+
+      </field>
+    </record>
+
+    <!-- Form: añadir descripción tras responsable (export OV - Varios, id 2524) -->
+    <record id="view_sale_activity_form_sale_ov" model="ir.ui.view">
+      <field name="name">sid.sale.activity.form.sale.ov</field>
+      <field name="model">sale.activity</field>
+      <field name="inherit_id" ref="sale.view.activity.form"/>
+      <field name="arch" type="xml">
+        <xpath expr="//field[@name='user_id']" position="after">
+          <field name="description" widget="text" optional="show"/>
+        </xpath>
+      </field>
+    </record>
+
+  </data>
+</odoo>
