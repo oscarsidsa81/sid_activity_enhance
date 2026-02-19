@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <data>
+    <record id="sid_view_sale_order_line_tree_wizard_button" model="ir.ui.view">
+      <field name="name">sid.sale.order.line.tree.wizard.button</field>
+      <field name="model">sale.order.line</field>
+      <field name="inherit_id" ref="sale.view_order_line_tree"/>
+      <field name="arch" type="xml">
+        <xpath expr="//tree" position="inside">
+          <header>
+            <button name="%(sid_action_sale_line_activity_wizard)d"
+                    string="sid - Batch Activities"
+                    type="action"
+                    class="btn-primary"
+                    display="always"/>
+          </header>
+        </xpath>
+      </field>
+    </record>
+  </data>
+</odoo>
