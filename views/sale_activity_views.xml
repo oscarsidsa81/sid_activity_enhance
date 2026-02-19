@@ -3,7 +3,7 @@
   <data>
 
     <!-- Search: añade agrupaciones y campos (export OV - Varios, id 2343) -->
-    <record id="view_sale_activity_search_ov" model="ir.ui.view">
+    <record id="sid_view_sale_activity_search_ov" model="ir.ui.view">
       <field name="name">sid.sale.activity.search.ov</field>
       <field name="model">sale.activity</field>
       <field name="inherit_id" ref="oct_so_line_info.view_activity_search"/>
@@ -35,7 +35,7 @@
     </record>
 
     <!-- Tree: columnas, decoraciones y opciones (export OV - Activities, id 2333) -->
-    <record id="view_sale_activity_tree_ov" model="ir.ui.view">
+    <record id="sid_view_sale_activity_tree_ov" model="ir.ui.view">
       <field name="name">sid.sale.activity.tree.ov</field>
       <field name="model">sale.activity</field>
       <field name="inherit_id" ref="oct_so_line_info.view_activity_tree"/>
@@ -94,7 +94,7 @@
     </record>
 
     <!-- Form: añadir descripción tras responsable (export OV - Varios, id 2524) -->
-    <record id="view_sale_activity_form_sale_ov" model="ir.ui.view">
+    <record id="sid_view_sale_activity_form_sale_ov" model="ir.ui.view">
       <field name="name">sid.sale.activity.form.sale.ov</field>
       <field name="model">sale.activity</field>
       <field name="inherit_id" ref="sale.view.activity.form"/>

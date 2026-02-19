@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <data>
+    <record id="sid_view_sale_activity_tag_rule_tree" model="ir.ui.view">
+      <field name="name">sid.sale.activity.tag.rule.tree</field>
+      <field name="model">sale.activity.tag.rule</field>
+      <field name="arch" type="xml">
+        <tree>
+          <field name="activity_type"/>
+          <field name="tag_id"/>
+          <field name="active"/>
+        </tree>
+      </field>
+    </record>
+
+    <record id="sid_view_sale_activity_tag_rule_form" model="ir.ui.view">
+      <field name="name">sid.sale.activity.tag.rule.form</field>
+      <field name="model">sale.activity.tag.rule</field>
+      <field name="arch" type="xml">
+        <form>
+          <sheet>
+            <group>
+              <field name="activity_type"/>
+              <field name="tag_id"/>
+              <field name="active"/>
+            </group>
+          </sheet>
+        </form>
+      </field>
+    </record>
+
+    <record id="sid_action_sale_activity_tag_rule" model="ir.actions.act_window">
+      <field name="name">sid - Activity Tag Rules</field>
+      <field name="res_model">sale.activity.tag.rule</field>
+      <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem id="sid_menu_sale_activity_tag_rule"
+              name="Activity Tag Rules"
+              parent="base.menu_administration"
+              action="sid_action_sale_activity_tag_rule"
+              sequence="90"
+              groups="base.group_system"/>
+  </data>
+</odoo>
