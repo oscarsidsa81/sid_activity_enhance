@@ -20,7 +20,6 @@
 
           <!-- Campos en búsqueda -->
           <field name="sale_order_id"/>
-          <field name="x_item"/>
           <field name="production_lot_ids"/>
           <field name="product_id"/>
           <field name="type"/>
@@ -46,17 +45,11 @@
           <field name="purchase_order_id" widget="many2one" string="Compra" optional="show"/>
           <field name="stage" optional="show"/>
           <field name="type" expand="1" optional="show"/>
-          <field name="x_item" optional="show"/>
-          <field name="x_desc_sale_line" optional="show"/>
           <field name="description" optional="show" widget="text"/>
           <field name="user_id" optional="show"/>
           <xpath expr="//field[@name='user_id']" position="move"/>
           <field name="sale_line_route" optional="show" string="Ruta"/>
-          <field name="x_fecha_venta" widget="remaining_days" optional="show"/>
           <field name="expected_date" string="Fecha Esperada" optional="show"/>
-          <field name="x_peso" optional="show"/>
-          <field name="x_qty" optional="show"/>
-          <field name="x_peso_total" optional="show"/>
         </xpath>
 
         <xpath expr="//tree[1]" position="attributes">
