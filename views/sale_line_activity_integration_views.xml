@@ -5,6 +5,7 @@
       <field name="name">sid.sale.order.line.tree.wizard.button</field>
       <field name="model">sale.order.line</field>
       <field name="inherit_id" ref="sale.view_order_line_tree"/>
+      <field name="priority">90</field>
       <field name="arch" type="xml">
         <xpath expr="//tree" position="inside">
           <header>
@@ -14,6 +15,22 @@
                     class="btn-primary"
                     display="always"/>
           </header>
+        </xpath>
+      </field>
+    </record>
+
+    <record id="sid_view_sale_order_form_wizard_button" model="ir.ui.view">
+      <field name="name">sid.sale.order.form.wizard.button</field>
+      <field name="model">sale.order</field>
+      <field name="inherit_id" ref="sale.view_order_form"/>
+      <field name="priority">90</field>
+      <field name="arch" type="xml">
+        <xpath expr="//header" position="inside">
+          <button name="%(sid_action_sale_line_activity_wizard)d"
+                  type="action"
+                  string="sid - Batch Activities"
+                  class="btn-secondary"
+                  context="{'active_model': 'sale.order.line', 'active_ids': order_line.ids}"/>
         </xpath>
       </field>
     </record>
