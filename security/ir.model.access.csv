@@ -1,0 +1,2 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_sale_activity_tag_rule_system,sale.activity.tag.rule system,model_sale_activity_tag_rule,base.group_system,1,1,1,1
