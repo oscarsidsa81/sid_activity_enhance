@@ -1,3 +1,2 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_sale_activity_tag_rule_system,sale.activity.tag.rule system,model_sale_activity_tag_rule,base.group_system,1,1,1,1
-access_sale_line_activity_wizard_user,sale.line.activity.wizard user,model_sale_line_activity_wizard,base.group_user,1,1,1,1
