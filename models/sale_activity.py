@@ -29,6 +29,18 @@ class SaleActivity(models.Model):
         'coladas': 29,
     }
 
+    x_desc_sale_line = fields.Text(string='Descripción Venta', related='sale_line_id.name', readonly=True, store=False)
+    x_fecha_venta = fields.Datetime(string='Fecha Contractual Venta', related='sale_line_id.calculated_date', readonly=True, store=True)
+    x_item = fields.Char(string='Item', related='sale_line_id.item', readonly=True, store=True)
+    x_peso = fields.Float(string='Peso unitario', related='product_id.weight', readonly=True, store=False)
+    x_qty = fields.Float(string='Cantidad Solicitada', related='sale_line_id.product_uom_qty', readonly=True, store=True)
+    x_peso_total = fields.Float(string='Peso Total', compute='_compute_x_peso_total', store=True, readonly=True)
+
+    @api.depends('x_qty', 'x_peso')
+    def _compute_x_peso_total(self):
+        for rec in self:
+            rec.x_peso_total = (rec.x_peso or 0.0) * (rec.x_qty or 0.0)
+
     @staticmethod
     def _normalize_activity_type(raw):
         value = (raw or '').strip().lower()
@@ -121,6 +133,40 @@ class SaleActivity(models.Model):
             if chosen:
                 rec.picking_type_id = chosen.id
 
+    def _is_certificate_related(self):
+        self.ensure_one()
+        activity_type = self._normalize_activity_type(self.type)
+        return any(term in activity_type for term in {'cert', 'certificado', 'certificados', 'ensayo', 'ensayos', 'inspeccion'})
+
+    def _get_route_picking_type_candidates(self):
+        self.ensure_one()
+        if not self.sale_line_route:
+            return self.env['stock.picking.type']
+        return self.sale_line_route.sudo().rule_ids.mapped('picking_type_id').sorted(key=lambda pt: (pt.sequence, pt.id))
+
+    def _pick_certificate_operation_type(self, candidates):
+        """Elige tipo de operación por booleano `is_certificate_type` cuando exista."""
+        if not candidates:
+            return candidates
+
+        if 'is_certificate_type' in candidates._fields:
+            cert_candidates = candidates.filtered('is_certificate_type')
+            if cert_candidates:
+                return cert_candidates[:1]
+
+        preferred = candidates.filtered(lambda c: c.code == 'internal')[:1]
+        if preferred:
+            return preferred
+        preferred = candidates.filtered(lambda c: c.code == 'outgoing')[:1]
+        return preferred or candidates[:1]
+
+    def _autofill_picking_type_from_route(self):
+        for rec in self.filtered(lambda r: r.sale_line_route and not r.picking_type_id and r._is_certificate_related()):
+            candidates = rec._get_route_picking_type_candidates()
+            chosen = rec._pick_certificate_operation_type(candidates)
+            if chosen:
+                rec.picking_type_id = chosen.id
+
     def _check_route_vs_picking_type(self):
         Route = self.env['stock.location.route'].sudo()
         for rec in self.filtered(lambda r: r.picking_type_id and r.sale_line_route):
@@ -142,6 +188,45 @@ class SaleActivity(models.Model):
         if not field or field.type != 'many2many':
             return False
         return field.comodel_name
+
+    def _resolve_tag_ids_for_types(self, activity_types):
+        tag_model = self._get_tag_model()
+        if not tag_model:
+            return self.env['ir.model'], []
+
+        Tag = self.env[tag_model].sudo()
+        Rule = self.env['sale.activity.tag.rule'].sudo()
+
+        normalized_types = []
+        for activity_type in activity_types:
+            normalized = self._normalize_activity_type(activity_type)
+            if normalized:
+                normalized_types.append(normalized)
+
+        result = set()
+        rules = Rule.browse()
+        if normalized_types:
+            rules = Rule.search([
+                ('active', '=', True),
+                ('activity_type', 'in', list(set(normalized_types))),
+            ])
+            result.update(rules.mapped('tag_id').ids)
+
+        # Fallback heredado: resolver por nombre o mapa estático si no existe regla
+        unresolved = set(normalized_types) - set(rules.mapped('activity_type'))
+
+        for normalized in unresolved:
+            tag = Tag.search([('name', '=ilike', normalized)], limit=1)
+            if tag:
+                result.add(tag.id)
+                continue
+
+            fallback = self.TAG_ID_MAP.get(normalized)
+            if fallback:
+                fallback_tag = Tag.browse(fallback).exists()
+                if fallback_tag:
+                    result.add(fallback_tag.id)
+
 
     def _resolve_tag_ids_for_types(self, activity_types):
         tag_model = self._get_tag_model()
