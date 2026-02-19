@@ -97,7 +97,7 @@
     <record id="sid_view_sale_activity_form_sale_ov" model="ir.ui.view">
       <field name="name">sid.sale.activity.form.sale.ov</field>
       <field name="model">sale.activity</field>
-      <field name="inherit_id" ref="sale.view.activity.form"/>
+      <field name="inherit_id" ref="oct_so_line_info.sale_view_activity_form"/>
       <field name="arch" type="xml">
         <xpath expr="//field[@name='user_id']" position="after">
           <field name="description" widget="text" optional="show"/>
