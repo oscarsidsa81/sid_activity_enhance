@@ -10,6 +10,7 @@
         'stock',
         'purchase',
         'oct_so_line_info',
+        'oct_fecha_contrato_ventas',
     ],
     'data': [
         'views/sale_activity_views.xml',
