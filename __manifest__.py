@@ -14,6 +14,9 @@
     ],
     'data': [
         'views/sale_activity_views.xml',
+        'views/sale_activity_tag_rule_views.xml',
+        'views/sale_line_activity_integration_views.xml',
+        'views/sale_line_activity_wizard_views.xml',
     ],
     'post_init_hook': 'post_init_hook',
     'installable': True,
