@@ -1,5 +1,5 @@
 {
-    'name': 'sid_activity_enhance',
+    'name': 'SID - Sale Activity (OV)',
     'version': '15.0.1.0.1',
     'category': 'Sales',
     'summary': 'Personalizaciones de sale.activity (campos, vistas y lógicas) trasladadas a módulo.',
@@ -11,7 +11,6 @@
         'purchase',
         'oct_so_line_info',
         'oct_certificate_receptions',
-        'oct_fecha_contrato_ventas',
     ],
     'data': [
         'security/ir.model.access.csv',
