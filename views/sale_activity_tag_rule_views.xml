@@ -37,7 +37,7 @@
 
     <menuitem id="sid_menu_sale_activity_tag_rule"
               name="Activity Tag Rules"
-              parent="base.menu_administration"
+              parent="base.menu_technical"
               action="sid_action_sale_activity_tag_rule"
               sequence="90"
               groups="base.group_system"/>

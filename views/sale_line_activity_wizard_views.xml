@@ -30,6 +30,7 @@
       <field name="target">new</field>
       <field name="binding_model_id" ref="sale.model_sale_order_line"/>
       <field name="binding_view_types">list</field>
+      <field name="binding_type">action</field>
       <field name="view_id" ref="sid_view_sale_line_activity_wizard_form"/>
     </record>
   </data>

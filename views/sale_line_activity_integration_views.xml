@@ -9,9 +9,9 @@
       <field name="arch" type="xml">
         <xpath expr="//tree" position="inside">
           <header>
-            <button name="%(sid_action_sale_line_activity_wizard)d"
+            <button name="action_open_sid_batch_activities"
                     string="sid - Batch Activities"
-                    type="action"
+                    type="object"
                     class="btn-primary"
                     display="always"/>
           </header>
@@ -26,11 +26,10 @@
       <field name="priority">90</field>
       <field name="arch" type="xml">
         <xpath expr="//header" position="inside">
-          <button name="%(sid_action_sale_line_activity_wizard)d"
-                  type="action"
+          <button name="action_open_sid_batch_activities"
+                  type="object"
                   string="sid - Batch Activities"
-                  class="btn-secondary"
-                  context="{'active_model': 'sale.order.line', 'active_ids': order_line.ids}"/>
+                  class="btn-secondary"/>
         </xpath>
       </field>
     </record>
