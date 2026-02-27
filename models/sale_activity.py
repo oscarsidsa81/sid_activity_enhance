@@ -6,63 +6,57 @@ class SaleActivity(models.Model):
     _inherit = 'sale.activity'
 
     # --- Campos Studio migrados ---
-    x_desc_sale_line = fields.Text(
+    desc_sale_line = fields.Text(
         string='Descripción Venta',
         related='sale_line_id.name',
         readonly=True,
         store=False,
     )
 
-    x_fecha_venta = fields.Datetime(
+    fecha_venta = fields.Datetime(
         string='Fecha Contractual Venta',
         related='sale_line_id.calculated_date',
         readonly=True,
         store=True,
     )
 
-    x_item = fields.Char(
+    item = fields.Char(
         string='Item',
         related='sale_line_id.item',
         readonly=True,
         store=True,
     )
 
-    x_peso = fields.Float(
-        string='Peso unitario',
+    peso = fields.Float(
+        string='Peso Unitario',
         related='product_id.weight',
         readonly=True,
         store=False,
     )
 
-    x_qty = fields.Float(
+    qty = fields.Float(
         string='Cantidad Solicitada',
         related='sale_line_id.product_uom_qty',
         readonly=True,
         store=True,
     )
 
-    x_peso_total = fields.Float(
+    peso_total = fields.Float(
         string='Peso Total',
-        compute='_compute_x_peso_total',
+        compute='_compute_peso_total',
         store=True,
         readonly=True,
     )
 
-    @api.depends('x_qty', 'x_peso')
-    def _compute_x_peso_total(self):
+    @api.depends('qty', 'peso')
+    def _compute_peso_total(self):
         for rec in self:
-            rec.x_peso_total = (rec.x_peso or 0.0) * (rec.x_qty or 0.0)
+            rec.peso_total = (rec.peso or 0.0) * (rec.qty or 0.0)
 
     # --- Overrides / validaciones / sincronizaciones ---
 
     @api.model_create_multi
     def create(self, vals_list):
-        seq = self.env['ir.sequence'].sudo()
-        for vals in vals_list:
-            # Replica la server action "OV - Actividades": asignar display_name por secuencia.
-            # Solo si viene vacío o parece valor por defecto.
-            if not vals.get('display_name'):
-                vals['display_name'] = seq.next_by_code('sale.activity')
         records = super().create(vals_list)
         records._check_duplicate_activity()
         records._check_route_vs_picking_type()
@@ -100,7 +94,7 @@ class SaleActivity(models.Model):
                 raise UserError(_(
                     "Este item %s ya tiene una actividad del tipo %s. "
                     "Incluye en la descripción de la actividad todos los trabajos relacionados."
-                ) % (dup.x_item or rec.x_item or '', rec.type))
+                ) % (dup.item or rec.item or '', rec.type))
 
     def _check_route_vs_picking_type(self):
         """Replica la acción 'OV - Revisar type':
@@ -124,10 +118,10 @@ class SaleActivity(models.Model):
         """
         # Si el campo no existe en este entorno, no hacemos nada.
         SOL = self.env['sale.order.line']
-        if 'x_sale_line_tags' not in SOL._fields:
+        if 'sale_line_tags' not in SOL._fields:
             return
 
-        tag_model = SOL._fields['x_sale_line_tags'].comodel_name
+        tag_model = SOL._fields['sale_line_tags'].comodel_name
         Tag = self.env[tag_model].sudo()
 
         # Fallback por ID (tal y como estaba en Studio). Si en otra BD cambian IDs,
@@ -175,4 +169,4 @@ class SaleActivity(models.Model):
             if not tid:
                 continue
             # Añadir tag sin duplicar
-            rec.sale_line_id.sudo().write({'x_sale_line_tags': [(4, tid, 0)]})
+            rec.sale_line_id.sudo().write({'sale_line_tags': [(4, tid, 0)]})

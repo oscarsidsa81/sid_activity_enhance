@@ -18,17 +18,6 @@ def _build_domain(model, model_names, explicit_names, keyword_names):
 def post_init_hook(cr, registry):
     env = api.Environment(cr, SUPERUSER_ID, {})
 
-    seq = env['ir.sequence'].sudo().search([('code', '=', 'sale.activity')], limit=1)
-    if not seq:
-        env['ir.sequence'].sudo().create({
-            'name': 'Sale Activity',
-            'code': 'sale.activity',
-            'implementation': 'no_gap',
-            'prefix': 'ACT/',
-            'padding': 5,
-            'company_id': False,
-        })
-
     model_names = ['sale.activity', 'sale.order.line', 'stock.move', 'stock.picking']
 
     explicit_names = {
