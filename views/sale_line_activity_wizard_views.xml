@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <data>
+    <record id="sid_view_sale_line_activity_wizard_form" model="ir.ui.view">
+      <field name="name">sid.sale.line.activity.wizard.form</field>
+      <field name="model">sale.line.activity.wizard</field>
+      <field name="arch" type="xml">
+        <form string="Batch Activities">
+          <group>
+            <field name="operation"/>
+            <field name="user_id" attrs="{'invisible': [('operation', '=', 'remove')]}"/>
+            <field name="date" attrs="{'invisible': [('operation', '=', 'remove')]}"/>
+            <field name="description" attrs="{'invisible': [('operation', '=', 'remove')]}"/>
+          </group>
+          <group>
+            <field name="activity_type_ids" widget="many2many_tags" options="{'no_create_edit': True}"/>
+          </group>
+          <footer>
+            <button name="action_apply" string="Apply" type="object" class="btn-primary"/>
+            <button string="Cancel" special="cancel"/>
+          </footer>
+        </form>
+      </field>
+    </record>
+
+    <record id="sid_action_sale_line_activity_wizard" model="ir.actions.act_window">
+      <field name="name">sid - Batch Activities</field>
+      <field name="res_model">sale.line.activity.wizard</field>
+      <field name="view_mode">form</field>
+      <field name="target">new</field>
+      <field name="binding_model_id" ref="sale.model_sale_order_line"/>
+      <field name="binding_view_types">list</field>
+      <field name="binding_type">action</field>
+      <field name="view_id" ref="sid_view_sale_line_activity_wizard_form"/>
+    </record>
+  </data>
+</odoo>

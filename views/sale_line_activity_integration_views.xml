@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <data>
+    <record id="sid_view_sale_order_line_tree_wizard_button" model="ir.ui.view">
+      <field name="name">sid.sale.order.line.tree.wizard.button</field>
+      <field name="model">sale.order.line</field>
+      <field name="inherit_id" ref="sale.view_order_line_tree"/>
+      <field name="priority">90</field>
+      <field name="arch" type="xml">
+        <xpath expr="//tree" position="inside">
+          <header>
+            <button name="action_open_sid_batch_activities"
+                    string="sid - Batch Activities"
+                    type="object"
+                    class="btn-primary"
+                    display="always"/>
+          </header>
+        </xpath>
+      </field>
+    </record>
+
+    <record id="sid_view_sale_order_form_wizard_button" model="ir.ui.view">
+      <field name="name">sid.sale.order.form.wizard.button</field>
+      <field name="model">sale.order</field>
+      <field name="inherit_id" ref="sale.view_order_form"/>
+      <field name="priority">90</field>
+      <field name="arch" type="xml">
+        <xpath expr="//header" position="inside">
+          <button name="action_open_sid_batch_activities"
+                  type="object"
+                  string="sid - Batch Activities"
+                  class="btn-secondary"/>
+        </xpath>
+      </field>
+    </record>
+  </data>
+</odoo>
