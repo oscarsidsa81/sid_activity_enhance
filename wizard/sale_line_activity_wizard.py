@@ -22,9 +22,17 @@ class SaleLineActivityWizard(models.TransientModel):
     )
 
     line_ids = fields.Many2many('sale.order.line', string='Sale Lines', readonly=True)
+    preview_activity_ids = fields.Many2many(
+        'sale.activity',
+        string='Activities in selected lines',
+        compute='_compute_existing_activities',
+        readonly=True,
+        store=False,
+    )
+    # Legacy compatibility: some clients/views may still post this field name.
     existing_activity_ids = fields.Many2many(
         'sale.activity',
-        string='Existing Activities',
+        string='Existing Activities (legacy)',
         compute='_compute_existing_activities',
         readonly=True,
         store=False,
@@ -37,6 +45,7 @@ class SaleLineActivityWizard(models.TransientModel):
             lines = wiz.env['sale.order.line'].browse(active_ids).exists()
             wiz.line_ids = [(6, 0, lines.ids)]
             acts = wiz.env['sale.activity'].sudo().search([('sale_line_id', 'in', lines.ids)])
+            wiz.preview_activity_ids = [(6, 0, acts.ids)]
             wiz.existing_activity_ids = [(6, 0, acts.ids)]
 
 
@@ -70,14 +79,27 @@ class SaleLineActivityWizard(models.TransientModel):
         Activity = self.env['sale.activity'].sudo()
 
         if self.operation == 'add':
+            existing = Activity.search([
+                ('sale_line_id', 'in', sale_lines.ids),
+                ('type', 'in', selected_types),
+            ])
+            duplicated_pairs = {(act.sale_line_id.id, act.type) for act in existing}
+            if duplicated_pairs:
+                details = []
+                for line in sale_lines:
+                    for act_type in selected_types:
+                        if (line.id, act_type) in duplicated_pairs:
+                            details.append(_('- Línea %s ya tiene actividad tipo "%s"') % (
+                                line.display_name, act_type,
+                            ))
+                if details:
+                    raise UserError(_(
+                        'Ya existen actividades del mismo tipo en algunas líneas seleccionadas.\n\n%s\n\n'
+                        'Usa la operación "Remove selected activities" si deseas reemplazarlas.'
+                    ) % ('\n'.join(details[:30])))
+
             for line in sale_lines:
                 for act_type in selected_types:
-                    exists = Activity.search([
-                        ('sale_line_id', '=', line.id),
-                        ('type', '=', act_type),
-                    ], limit=1)
-                    if exists:
-                        continue
                     Activity.create({
                         'sale_line_id': line.id,
                         'type': act_type,
