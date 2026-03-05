@@ -5,29 +5,88 @@ from odoo.exceptions import UserError
 class SaleActivity(models.Model):
     _inherit = 'sale.activity'
 
-    TAG_ID_MAP = {
-        'mecanizar': 15,
-        'cortar': 1,
-        'roscar': 16,
-        'biselar': 17,
-        'ranurar': 18,
-        '3lpe / pintar': 19,
-        'pintar': 19,
-        'curvar': 20,
-        'galvanizar': 21,
-        'ensayos': 22,
-        'montaje': 23,
-        'certificados': 24,
-        'inspeccion interna': 24,
-        'inspección interna': 24,
-        'inspeccion cliente': 25,
-        'inspección cliente': 25,
-        'inspeccion': 26,
-        'inspección': 26,
-        'taller': 27,
-        'colada': 29,
-        'coladas': 29,
+    _rec_name = 'name'
+
+    name = fields.Char(
+        string='Referencia',
+        default=lambda self: self.env['ir.sequence'].sudo().next_by_code('sale.activity'),
+        readonly=True,
+        copy=False,
+    )
+
+    # Campos operativos (NO Studio). Si existen campos legacy x_* se usan
+    # SOLO como fallback para no perder información histórica.
+    sid_item = fields.Char(string='Item', compute='_compute_sid_fields', store=True, readonly=True)
+    sid_qty = fields.Float(string='Cantidad solicitada', compute='_compute_sid_fields', store=True, readonly=True)
+    sid_peso = fields.Float(string='Peso unitario', compute='_compute_sid_fields', store=True, readonly=True)
+    sid_peso_total = fields.Float(string='Peso total', compute='_compute_sid_fields', store=True, readonly=True)
+    sid_desc_sale_line = fields.Text(string='Descripción venta', compute='_compute_sid_fields', store=True, readonly=True)
+    sid_fecha_venta = fields.Datetime(string='Fecha contractual venta', compute='_compute_sid_fields', store=True, readonly=True)
+
+    @api.depends('sale_line_id', 'sale_line_id.product_uom_qty', 'sale_line_id.name', 'sale_line_id.sequence',
+                 'sale_line_id.order_id.date_order', 'sale_line_id.order_id.commitment_date', 'product_id', 'product_id.weight')
+    def _compute_sid_fields(self):
+        for rec in self:
+            line = rec.sale_line_id
+            # Item
+            item = False
+            if 'x_item' in rec._fields and rec.x_item:
+                item = rec.x_item
+            elif line:
+                item = str(getattr(line, 'sequence', False) or line.id)
+            rec.sid_item = item or ''
+
+            # Qty
+            qty = 0.0
+            if 'x_qty' in rec._fields and rec.x_qty:
+                qty = rec.x_qty
+            elif line and 'product_uom_qty' in line._fields:
+                qty = line.product_uom_qty or 0.0
+            rec.sid_qty = qty
+
+            # Peso unitario
+            peso = 0.0
+            if 'x_peso' in rec._fields and rec.x_peso:
+                peso = rec.x_peso
+            elif rec.product_id and 'weight' in rec.product_id._fields and rec.product_id.weight:
+                peso = rec.product_id.weight
+            rec.sid_peso = peso
+            rec.sid_peso_total = peso * qty
+
+            # Descripción venta
+            desc = False
+            if 'x_desc_sale_line' in rec._fields and rec.x_desc_sale_line:
+                desc = rec.x_desc_sale_line
+            elif line and 'name' in line._fields:
+                desc = line.name
+            rec.sid_desc_sale_line = desc or ''
+
+            # Fecha venta
+            fecha = False
+            if 'x_fecha_venta' in rec._fields and rec.x_fecha_venta:
+                fecha = rec.x_fecha_venta
+            elif line and line.order_id:
+                fecha = getattr(line.order_id, 'commitment_date', False) or getattr(line.order_id, 'date_order', False)
+            rec.sid_fecha_venta = fecha
+
+    # activity_type normalizado -> código estable del tag
+    TAG_CODE_MAP = {
+        'mecanizar': 'mecanizar',
+        'cortar': 'cortar',
+        'roscar': 'roscar',
+        'biselar': 'biselar',
+        'ranurar': 'ranurar',
+        'pintar': 'pintar',
+        'curvar': 'curvar',
+        'galvanizar': 'galvanizar',
+        'ensayos': 'ensayos',
+        'montaje': 'montaje',
+        'inspeccion interna': 'inspeccion interna',
+        'inspeccion cliente': 'inspeccion cliente',
+        'inspeccion': 'inspeccion',
+        'taller': 'taller',
     }
+
 
     @staticmethod
     def _normalize_activity_type(raw):
@@ -38,8 +97,9 @@ class SaleActivity(models.Model):
     def create(self, vals_list):
         seq = self.env['ir.sequence'].sudo()
         for vals in vals_list:
-            if not vals.get('display_name'):
-                vals['display_name'] = seq.next_by_code('sale.activity')
+            # Use a real field for the reference instead of writing to `display_name`
+            if not vals.get('name'):
+                vals['name'] = seq.next_by_code('sale.activity')
         records = super().create(vals_list)
         records._autofill_picking_type_from_route()
         records._check_duplicate_activity()
@@ -85,7 +145,7 @@ class SaleActivity(models.Model):
                 raise UserError(_(
                     "Este item %s ya tiene una actividad del tipo %s. "
                     "Incluye en la descripción de la actividad todos los trabajos relacionados."
-                ) % ((rec.sale_line_id.item or rec.sale_line_id.display_name or ''), rec.type))
+                ) % ((rec.sid_item or rec.sale_line_id.display_name or ''), rec.type))
 
     def _is_certificate_related(self):
         self.ensure_one()
@@ -138,10 +198,8 @@ class SaleActivity(models.Model):
         self._recompute_sale_line_and_inventory_tags(sale_lines)
 
     def _get_tag_model(self):
-        field = self.env['sale.order.line']._fields.get('x_sale_line_tags')
-        if not field or field.type != 'many2many':
-            return False
-        return field.comodel_name
+        # Modelo estable propio del módulo (no depende de Studio)
+        return 'sid.activity.tag'
 
     def _resolve_tag_ids_for_types(self, activity_types):
         tag_model = self._get_tag_model()
@@ -151,35 +209,27 @@ class SaleActivity(models.Model):
         Tag = self.env[tag_model].sudo()
         Rule = self.env['sale.activity.tag.rule'].sudo()
 
-        normalized_types = []
-        for activity_type in activity_types:
-            normalized = self._normalize_activity_type(activity_type)
-            if normalized:
-                normalized_types.append(normalized)
+        raw_types = [t for t in activity_types if t]
 
         result = set()
         rules = Rule.browse()
-        if normalized_types:
+        if raw_types:
             rules = Rule.search([
                 ('active', '=', True),
-                ('activity_type', 'in', list(set(normalized_types))),
+                ('activity_type', 'in', list(set(raw_types))),
             ])
             result.update(rules.mapped('tag_id').ids)
 
-        # Fallback heredado: resolver por nombre o mapa estático si no existe regla
-        unresolved = set(normalized_types) - set(rules.mapped('activity_type'))
-
-        for normalized in unresolved:
-            tag = Tag.search([('name', '=ilike', normalized)], limit=1)
+        # Fallback: resolver por code (sin IDs duros) si no existe regla
+        unresolved = set(raw_types) - set(rules.mapped('activity_type'))
+        for raw in unresolved:
+            normalized = self._normalize_activity_type(raw)
+            wanted_code = self.TAG_CODE_MAP.get(normalized)
+            if not wanted_code:
+                continue
+            tag = Tag.search([('code', '=', wanted_code)], limit=1)
             if tag:
                 result.add(tag.id)
-                continue
-
-            fallback = self.TAG_ID_MAP.get(normalized)
-            if fallback:
-                fallback_tag = Tag.browse(fallback).exists()
-                if fallback_tag:
-                    result.add(fallback_tag.id)
 
         return Tag, sorted(result)
 
@@ -187,16 +237,13 @@ class SaleActivity(models.Model):
         if not sale_lines:
             return
 
-        field = sale_lines._fields.get('x_sale_line_tags')
-        if not field or field.type != 'many2many':
-            return
-
         for line in sale_lines.sudo():
             activity_types = line.activity_ids.mapped('type') if 'activity_ids' in line._fields else []
             Tag, tag_ids = self._resolve_tag_ids_for_types(activity_types)
             if not Tag:
                 continue
-            line.write({'x_sale_line_tags': [(6, 0, tag_ids)]})
+            if 'sid_activity_tag_ids' in line._fields:
+                line.write({'sid_activity_tag_ids': [(6, 0, tag_ids)]})
             self._sync_inventory_tags_from_sale_line(line, tag_ids, Tag._name)
 
     def _sync_inventory_tags_from_sale_line(self, sale_line, tag_ids, tag_model):
@@ -206,17 +253,7 @@ class SaleActivity(models.Model):
         if not moves:
             return
 
-        for field_name in ('x_tags_activities', 'x_activity_tags', 'x_sale_line_tags'):
-            field = moves._fields.get(field_name)
-            if not field or field.type != 'many2many' or field.comodel_name != tag_model:
-                continue
-            moves.sudo().write({field_name: [(6, 0, tag_ids)]})
-            break
+        if 'sid_activity_tag_ids' in moves._fields:
+            moves.sudo().write({'sid_activity_tag_ids': [(6, 0, tag_ids)]})
 
-        pickings = moves.mapped('picking_id')
-        for field_name in ('x_tags_activities', 'x_activity_tags', 'x_sale_line_tags'):
-            field = pickings._fields.get(field_name)
-            if not field or field.type != 'many2many' or field.comodel_name != tag_model:
-                continue
-            pickings.sudo().write({field_name: [(6, 0, tag_ids)]})
-            break
+        # No escribimos en picking: el resumen a nivel albarán es compute (no store).

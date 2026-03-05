@@ -4,11 +4,17 @@ from odoo import fields, models
 class SaleOrderLine(models.Model):
     _inherit = 'sale.order.line'
 
-    # Compatibility field: some legacy related fields point to
-    # `sale_line_id.calculated_date` (e.g. sale.activity.fecha_venta).
-    # Keep it optional/read-only to avoid module upgrade crashes when the
-    # original customization that provided this field is absent.
-    calculated_date = fields.Datetime(string='Calculated Date', readonly=True)
+    # Tags de actividades (NO Studio). Se sincroniza desde sale.activity.
+    # Modelo de tags estable del módulo (sid.activity.tag). Los modelos x_
+    # sólo se consideran legacy/migración.
+    sid_activity_tag_ids = fields.Many2many(
+        comodel_name='sid.activity.tag',
+        relation='sid_sale_line_activity_tag_rel',
+        column1='sale_line_id',
+        column2='tag_id',
+        string='Tags actividades',
+        help='Tags derivados de los tipos de actividades vinculadas a la línea.',
+    )
 
     def action_open_sid_batch_activities(self):
         self.ensure_one()

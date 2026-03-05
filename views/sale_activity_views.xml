@@ -40,6 +40,7 @@
       <field name="inherit_id" ref="oct_so_line_info.view_activity_tree"/>
       <field name="arch" type="xml">
         <xpath expr="//field[@name='picking_type_id']" position="before">
+          <field name="name" string="Ref" optional="show"/>
           <field name="so_status" string="Estado del Pedido" optional="hide"/>
           <xpath expr="//field[@name='sale_order_id']" position="move"/>
           <field name="purchase_order_id" widget="many2one" string="Compra" optional="show"/>
