@@ -218,7 +218,15 @@ class SaleActivity(models.Model):
                 ('active', '=', True),
                 ('activity_type', 'in', list(set(raw_types))),
             ])
-            result.update(rules.mapped('tag_id').ids)
+            # Campo nuevo recomendado: sid_tag_id (M2O a sid.activity.tag). Legacy: tag_id (int o M2O antiguo).
+            if 'sid_tag_id' in Rule._fields:
+                result.update(rules.mapped('sid_tag_id').ids)
+            else:
+                vals = rules.mapped('tag_id')
+                if hasattr(vals, 'ids'):
+                    result.update(vals.ids)
+                else:
+                    result.update([v for v in vals if isinstance(v, int)])
 
         # Fallback: resolver por code (sin IDs duros) si no existe regla
         unresolved = set(raw_types) - set(rules.mapped('activity_type'))
