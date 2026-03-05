@@ -266,20 +266,48 @@ class SaleActivity(models.Model):
 
         unresolved = set(raw_types) - resolved_types
         for raw in unresolved:
-            normalized = self._normalize_activity_type(raw)
-            wanted_code = self.TAG_CODE_MAP.get(normalized)
-            if not wanted_code:
-                continue
-            tag = Tag.search([('code', '=', wanted_code)], limit=1)
-            if not tag:
-                tag = Tag.create({
-                    'code': wanted_code,
-                    'name': self.TAG_NAME_MAP.get(wanted_code, wanted_code.upper()),
-                })
+            tag = self._ensure_tag_and_rule_for_activity_type(raw, Tag=Tag, Rule=Rule)
             if tag:
                 result.add(tag.id)
 
         return Tag, sorted(result)
+
+    def _ensure_tag_and_rule_for_activity_type(self, raw_type, Tag=None, Rule=None):
+        """Ensure sid tag + rule exist for an activity type.
+
+        Keeps `sale.activity.type`, `sid.activity.tag` and `sale.activity.tag.rule`
+        aligned for future activity types introduced in base modules/customizations.
+        """
+        raw_type = (raw_type or '').strip()
+        if not raw_type:
+            return self.env['sid.activity.tag']
+
+        Tag = Tag or self.env['sid.activity.tag'].sudo()
+        Rule = Rule or self.env['sale.activity.tag.rule'].sudo()
+
+        normalized = self._normalize_activity_type(raw_type)
+        wanted_code = self.TAG_CODE_MAP.get(normalized, normalized)
+        if not wanted_code:
+            return Tag.browse()
+
+        tag = Tag.search([('code', '=', wanted_code)], limit=1)
+        if not tag:
+            tag = Tag.create({
+                'code': wanted_code,
+                'name': self.TAG_NAME_MAP.get(wanted_code, raw_type.upper()),
+            })
+
+        rule = Rule.search([('activity_type', '=', raw_type)], limit=1)
+        if not rule:
+            Rule.create({
+                'activity_type': raw_type,
+                'sid_tag_id': tag.id,
+                'active': True,
+            })
+        elif 'sid_tag_id' in Rule._fields and not rule.sid_tag_id:
+            rule.write({'sid_tag_id': tag.id})
+
+        return tag
 
     def _recompute_sale_line_and_inventory_tags(self, sale_lines):
         if not sale_lines:
