@@ -38,12 +38,14 @@ class SaleLineActivityWizard(models.TransientModel):
         store=False,
     )
 
-    @api.depends_context('active_ids')
+    @api.depends('line_ids')
+    @api.depends_context('active_ids', 'active_model')
     def _compute_existing_activities(self):
         for wiz in self:
-            active_ids = wiz.env.context.get('active_ids', []) if wiz.env.context.get('active_model') == 'sale.order.line' else []
-            lines = wiz.env['sale.order.line'].browse(active_ids).exists()
-            wiz.line_ids = [(6, 0, lines.ids)]
+            lines = wiz.line_ids
+            if not lines and wiz.env.context.get('active_model') == 'sale.order.line':
+                active_ids = wiz.env.context.get('active_ids', [])
+                lines = wiz.env['sale.order.line'].browse(active_ids).exists()
             acts = wiz.env['sale.activity'].sudo().search([('sale_line_id', 'in', lines.ids)])
             wiz.preview_activity_ids = [(6, 0, acts.ids)]
             wiz.existing_activity_ids = [(6, 0, acts.ids)]
@@ -54,6 +56,9 @@ class SaleLineActivityWizard(models.TransientModel):
         vals = super().default_get(fields_list)
         if self.env.context.get('active_model') != 'sale.order.line':
             return vals
+        active_ids = self.env.context.get('active_ids', [])
+        if active_ids:
+            vals['line_ids'] = [(6, 0, active_ids)]
         # Default instructions requested for the operator.
         vals['description'] = _('Revisar instrucciones en campo Comments de la linea de venta')
         return vals
