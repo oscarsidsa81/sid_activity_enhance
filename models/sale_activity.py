@@ -267,8 +267,6 @@ class SaleActivity(models.Model):
             activities = self.env['sale.activity'].sudo().search([('sale_line_id', '=', line.id)])
             activity_types = activities.mapped('type')
             Tag, tag_ids = self._resolve_tag_ids_for_types(activity_types)
-            if not Tag:
-                continue
             if 'sid_activity_tag_ids' in line._fields:
                 line.write({'sid_activity_tag_ids': [(6, 0, tag_ids)]})
             self._sync_inventory_tags_from_sale_line(line, tag_ids, Tag._name)
