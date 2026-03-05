@@ -16,7 +16,7 @@ class SaleLineActivityWizard(models.TransientModel):
     description = fields.Char(string='Description')
 
     activity_type_ids = fields.Many2many(
-        'sale.activity.tag.rule',
+        'sid.activity.tag',
         string='Activity Types',
         help='Select activity types to add/remove in batch.'
     )
@@ -26,13 +26,14 @@ class SaleLineActivityWizard(models.TransientModel):
         vals = super().default_get(fields_list)
         if self.env.context.get('active_model') != 'sale.order.line':
             return vals
-        active_ids = self.env.context.get('active_ids', [])
-        vals['description'] = _('Actividad creada en lote (%s líneas)') % len(active_ids)
+        # Default instructions requested for the operator.
+        vals['description'] = _('Revisar instrucciones en campo Comments de la linea de venta')
         return vals
 
     def _selected_types(self):
         self.ensure_one()
-        return self.activity_type_ids.mapped('activity_type')
+        # sid.activity.tag.code matches exactly the key of sale.activity.type selection
+        return self.activity_type_ids.mapped('code')
 
     def action_apply(self):
         self.ensure_one()
@@ -63,7 +64,7 @@ class SaleLineActivityWizard(models.TransientModel):
                         'type': act_type,
                         'user_id': self.user_id.id or False,
                         'date': self.date,
-                        'description': self.description or _('Actividad creada en lote'),
+                        'description': self.description or _('Revisar instrucciones en campo Comments de la linea de venta'),
                     })
         else:
             acts = Activity.search([
