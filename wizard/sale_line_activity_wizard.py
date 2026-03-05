@@ -29,6 +29,14 @@ class SaleLineActivityWizard(models.TransientModel):
         readonly=True,
         store=False,
     )
+    # Legacy compatibility: some clients/views may still post this field name.
+    existing_activity_ids = fields.Many2many(
+        'sale.activity',
+        string='Existing Activities (legacy)',
+        compute='_compute_existing_activities',
+        readonly=True,
+        store=False,
+    )
 
     @api.depends_context('active_ids')
     def _compute_existing_activities(self):
@@ -38,6 +46,7 @@ class SaleLineActivityWizard(models.TransientModel):
             wiz.line_ids = [(6, 0, lines.ids)]
             acts = wiz.env['sale.activity'].sudo().search([('sale_line_id', 'in', lines.ids)])
             wiz.preview_activity_ids = [(6, 0, acts.ids)]
+            wiz.existing_activity_ids = [(6, 0, acts.ids)]
 
 
     @api.model
