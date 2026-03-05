@@ -87,6 +87,23 @@ class SaleActivity(models.Model):
         'taller': 'taller',
     }
 
+    TAG_NAME_MAP = {
+        'mecanizar': 'MECANIZAR',
+        'cortar': 'CORTAR',
+        'roscar': 'ROSCAR',
+        'biselar': 'BISELAR',
+        'ranurar': 'RANURAR',
+        'pintar': '3LPE / PINTAR',
+        'curvar': 'CURVAR',
+        'galvanizar': 'GALVANIZAR',
+        'ensayos': 'ENSAYOS',
+        'montaje': 'MONTAJE',
+        'inspeccion interna': 'INSPECCION INTERNA',
+        'inspeccion cliente': 'INSPECCION CLIENTE',
+        'inspeccion': 'INSPECCION',
+        'taller': 'TALLER',
+    }
+
 
     @staticmethod
     def _normalize_activity_type(raw):
@@ -254,6 +271,11 @@ class SaleActivity(models.Model):
             if not wanted_code:
                 continue
             tag = Tag.search([('code', '=', wanted_code)], limit=1)
+            if not tag:
+                tag = Tag.create({
+                    'code': wanted_code,
+                    'name': self.TAG_NAME_MAP.get(wanted_code, wanted_code.upper()),
+                })
             if tag:
                 result.add(tag.id)
 
