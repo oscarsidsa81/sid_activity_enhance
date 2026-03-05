@@ -21,6 +21,25 @@ class SaleLineActivityWizard(models.TransientModel):
         help='Select activity types to add/remove in batch.'
     )
 
+    line_ids = fields.Many2many('sale.order.line', string='Sale Lines', readonly=True)
+    existing_activity_ids = fields.Many2many(
+        'sale.activity',
+        string='Existing Activities',
+        compute='_compute_existing_activities',
+        readonly=True,
+        store=False,
+    )
+
+    @api.depends_context('active_ids')
+    def _compute_existing_activities(self):
+        for wiz in self:
+            active_ids = wiz.env.context.get('active_ids', []) if wiz.env.context.get('active_model') == 'sale.order.line' else []
+            lines = wiz.env['sale.order.line'].browse(active_ids).exists()
+            wiz.line_ids = [(6, 0, lines.ids)]
+            acts = wiz.env['sale.activity'].sudo().search([('sale_line_id', 'in', lines.ids)])
+            wiz.existing_activity_ids = [(6, 0, acts.ids)]
+
+
     @api.model
     def default_get(self, fields_list):
         vals = super().default_get(fields_list)

@@ -164,7 +164,23 @@ def post_init_hook(cr, registry):
             continue
         tag = Tag.search([('code', '=', code)], limit=1)
         if tag:
-            Rule.create({'activity_type': key, 'tag_id': tag.id, 'active': True})
+            # Campo operativo estable
+            Rule.create({'activity_type': key, 'sid_tag_id': tag.id, 'active': True})
+
+    # -----------------------------------------------------------------
+    # 3.3) Backfill picking_type_id en actividades existentes
+    # -----------------------------------------------------------------
+    # Si la ruta contempla un picking marcado como is_certificate_type, debe rellenarse.
+    # Esto corrige el caso "Madrid - Stock" donde antes quedaba en blanco.
+    try:
+        SA = env['sale.activity'].sudo()
+        if 'sale_line_route' in SA._fields and 'picking_type_id' in SA._fields:
+            missing = SA.search([('sale_line_route', '!=', False), ('picking_type_id', '=', False)])
+            if missing:
+                _logger.info('[sid_activity_enhance] Backfill picking_type_id: %s sale.activity a revisar', len(missing))
+                missing._autofill_picking_type_from_route()
+    except Exception as e:
+        _logger.warning('[sid_activity_enhance] Backfill picking_type_id skipped: %s', e)
 
     # -----------------------------------------------------------------
     # 4) One-time migration from legacy Studio fields to sid_* fields

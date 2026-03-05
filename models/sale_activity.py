@@ -175,8 +175,26 @@ class SaleActivity(models.Model):
         return preferred or candidates[:1]
 
     def _autofill_picking_type_from_route(self):
-        for rec in self.filtered(lambda r: r.sale_line_route and not r.picking_type_id and r._is_certificate_related()):
+        """Autocompleta *Operation to raise warning* (picking_type_id).
+
+        Decisión de negocio: no depende del tipo de actividad (cortar/curvar/etc.).
+        Se deduce a partir de la ruta (sale_line_route). Si la ruta contempla un
+        picking type marcado como `is_certificate_type`, se selecciona ese.
+
+        Si la ruta no tiene ningún picking de certificados, no se rellena.
+        """
+        for rec in self.filtered(lambda r: r.sale_line_route and not r.picking_type_id):
             candidates = rec._get_route_picking_type_candidates()
+            if not candidates:
+                continue
+
+            # Solo autocompletamos cuando la ruta tiene un picking "de certificados".
+            cert_candidates = candidates
+            if 'is_certificate_type' in candidates._fields:
+                cert_candidates = candidates.filtered('is_certificate_type')
+            if not cert_candidates:
+                continue
+
             chosen = rec._pick_certificate_operation_type(candidates)
             if chosen:
                 rec.picking_type_id = chosen.id
@@ -246,7 +264,8 @@ class SaleActivity(models.Model):
             return
 
         for line in sale_lines.sudo():
-            activity_types = line.activity_ids.mapped('type') if 'activity_ids' in line._fields else []
+            activities = self.env['sale.activity'].sudo().search([('sale_line_id', '=', line.id)])
+            activity_types = activities.mapped('type')
             Tag, tag_ids = self._resolve_tag_ids_for_types(activity_types)
             if not Tag:
                 continue
@@ -258,6 +277,11 @@ class SaleActivity(models.Model):
         moves = self.env['stock.move']
         if 'move_ids' in sale_line._fields:
             moves |= sale_line.move_ids
+        # En algunas configuraciones, move_ids no viene poblado o está vacío en el recordset.
+        # Para asegurar consistencia (y permitir agrupar por tags), buscamos explícitamente
+        # los movimientos por sale_line_id.
+        if not moves and 'sale_line_id' in self.env['stock.move']._fields:
+            moves = self.env['stock.move'].sudo().search([('sale_line_id', '=', sale_line.id)])
         if not moves:
             return
 

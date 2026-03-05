@@ -17,7 +17,6 @@ class SaleOrderLine(models.Model):
     )
 
     def action_open_sid_batch_activities(self):
-        self.ensure_one()
         action = self.env.ref(
             'sid_activity_enhance.sid_action_sale_line_activity_wizard',
             raise_if_not_found=False,
