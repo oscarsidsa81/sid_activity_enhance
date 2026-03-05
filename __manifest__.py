@@ -1,6 +1,6 @@
 {
     'name': 'sid_activity_enhance',
-    'version': '15.0.1.0.3',
+    'version': '15.0.1.0.4',
     'category': 'Sales',
     'summary': 'Personalizaciones de sale.activity (campos, vistas y lógicas) trasladadas a módulo.',
     'author': 'SIDSA',

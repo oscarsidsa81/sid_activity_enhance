@@ -1,3 +1,6 @@
+import logging
+_logger = logging.getLogger(__name__)
+
 from odoo import api, SUPERUSER_ID
 
 
@@ -17,6 +20,44 @@ def _build_domain(model, model_names, explicit_names, keyword_names):
 
 def post_init_hook(cr, registry):
     env = api.Environment(cr, SUPERUSER_ID, {})
+
+    stats = {
+        'rules_total': 0,
+        'rules_migrated': 0,
+        'sol_found': 0,
+        'sol_updated': 0,
+        'moves_found': 0,
+        'moves_updated': 0,
+        'legacy_links_total': 0,
+        'legacy_links_mapped': 0,
+        'legacy_links_unmapped': 0,
+        'unmapped_names': set(),
+    }
+
+    _logger.info('[sid_activity_enhance] MIGRATION start (legacy x_ -> sid)')
+
+    def _model_exists(name):
+        try:
+            env[name]
+            return True
+        except KeyError:
+            return False
+
+    def _map_legacy_tags(legacy_rs, legacy_to_sid):
+        cmds = []
+        for lt in legacy_rs:
+            stats['legacy_links_total'] += 1
+            lname = (getattr(lt, 'display_name', False) or getattr(lt, 'name', False) or '').strip()
+            sid_id = legacy_to_sid.get(lname)
+            if sid_id:
+                stats['legacy_links_mapped'] += 1
+                cmds.append(sid_id)
+            else:
+                stats['legacy_links_unmapped'] += 1
+                if lname:
+                    stats['unmapped_names'].add(lname)
+        return list(dict.fromkeys(cmds))  # unique preserve order
+
 
     # ---------------------------------------------------------------------
     # 1) Ensure sequence exists
@@ -143,15 +184,42 @@ def post_init_hook(cr, registry):
             if st:
                 legacy_map[lt.id] = st.id
 
+
+    # ---------------------------------------------------------------------
+    # sale.activity.tag.rule: migrate legacy integer tag_id (x_stock.move.tags id) -> sid_tag_id
+    # ---------------------------------------------------------------------
+    Rule = env['sale.activity.tag.rule'].sudo()
+    if legacy_map and 'sid_tag_id' in Rule._fields:
+        rules = Rule.search([('sid_tag_id', '=', False), ('tag_id', '!=', False)])
+        stats['rules_total'] = len(rules)
+        for r in rules:
+            sid_id = legacy_map.get(r.tag_id)
+            if sid_id:
+                r.write({'sid_tag_id': sid_id, 'tag_id': False})
+                stats['rules_migrated'] += 1
+            else:
+                # try by name if we can read legacy tag
+                try:
+                    lt = env['x_stock.move.tags'].sudo().browse(r.tag_id).exists()
+                    lname = (lt.display_name or lt.name or '').strip()
+                except Exception:
+                    lname = ''
+                if lname:
+                    stats['unmapped_names'].add(lname)
     # sale.order.line: x_sale_line_tags -> sid_activity_tag_ids (translated)
     SOL = env['sale.order.line'].sudo()
     if legacy_map and 'sid_activity_tag_ids' in SOL._fields and 'x_sale_line_tags' in SOL._fields:
         lines = SOL.search([('x_sale_line_tags', '!=', False)])
+        stats['sol_found'] = len(lines)
         for line in lines:
+            stats['legacy_links_total'] += len(line.x_sale_line_tags.ids)
             new_ids = [legacy_map.get(tid) for tid in line.x_sale_line_tags.ids]
+            stats['legacy_links_mapped'] += len([x for x in new_ids if x])
+            stats['legacy_links_unmapped'] += len([x for x in new_ids if not x])
             new_ids = [x for x in new_ids if x]
             if new_ids:
                 line.write({'sid_activity_tag_ids': [(6, 0, sorted(set(new_ids)))]})
+                stats['sol_updated'] += 1
 
     # stock.move: x_tags_activities/x_activity_tags -> sid_activity_tag_ids (translated)
     Move = env['stock.move'].sudo()
@@ -168,4 +236,20 @@ def post_init_hook(cr, registry):
                     new_ids = [x for x in new_ids if x]
                     if new_ids:
                         mv.write({'sid_activity_tag_ids': [(6, 0, sorted(set(new_ids)))]})
+                stats['moves_updated'] += 1
                 break
+
+
+    # ---------------------------------------------------------------------
+    # MIGRATION LOG SUMMARY
+    # ---------------------------------------------------------------------
+    unmapped = ", ".join(sorted(stats['unmapped_names'])) if stats['unmapped_names'] else "-"
+    _logger.info(
+        "[sid_activity_enhance] MIGRATION done | rules=%s migrated=%s | SOL found=%s updated=%s | MOVES found=%s updated=%s | "
+        "legacy_links total=%s mapped=%s unmapped=%s | unmapped_names=%s",
+        stats['rules_total'], stats['rules_migrated'],
+        stats['sol_found'], stats['sol_updated'],
+        stats['moves_found'], stats['moves_updated'],
+        stats['legacy_links_total'], stats['legacy_links_mapped'], stats['legacy_links_unmapped'],
+        unmapped,
+    )
