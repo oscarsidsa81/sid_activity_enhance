@@ -87,6 +87,23 @@ class SaleActivity(models.Model):
         'taller': 'taller',
     }
 
+    TAG_NAME_MAP = {
+        'mecanizar': 'MECANIZAR',
+        'cortar': 'CORTAR',
+        'roscar': 'ROSCAR',
+        'biselar': 'BISELAR',
+        'ranurar': 'RANURAR',
+        'pintar': '3LPE / PINTAR',
+        'curvar': 'CURVAR',
+        'galvanizar': 'GALVANIZAR',
+        'ensayos': 'ENSAYOS',
+        'montaje': 'MONTAJE',
+        'inspeccion interna': 'INSPECCION INTERNA',
+        'inspeccion cliente': 'INSPECCION CLIENTE',
+        'inspeccion': 'INSPECCION',
+        'taller': 'TALLER',
+    }
+
 
     @staticmethod
     def _normalize_activity_type(raw):
@@ -178,21 +195,14 @@ class SaleActivity(models.Model):
         """Autocompleta *Operation to raise warning* (picking_type_id).
 
         Decisión de negocio: no depende del tipo de actividad (cortar/curvar/etc.).
-        Se deduce a partir de la ruta (sale_line_route). Si la ruta contempla un
-        picking type marcado como `is_certificate_type`, se selecciona ese.
+        Se deduce a partir de la ruta (sale_line_route):
 
-        Si la ruta no tiene ningún picking de certificados, no se rellena.
+        - si la ruta contempla un operation type con `is_certificate_type`, se prioriza;
+        - si no, se usa fallback estable (internal > outgoing > primero por secuencia).
         """
         for rec in self.filtered(lambda r: r.sale_line_route and not r.picking_type_id):
             candidates = rec._get_route_picking_type_candidates()
             if not candidates:
-                continue
-
-            # Solo autocompletamos cuando la ruta tiene un picking "de certificados".
-            cert_candidates = candidates
-            if 'is_certificate_type' in candidates._fields:
-                cert_candidates = candidates.filtered('is_certificate_type')
-            if not cert_candidates:
                 continue
 
             chosen = rec._pick_certificate_operation_type(candidates)
@@ -246,14 +256,26 @@ class SaleActivity(models.Model):
                 else:
                     result.update([v for v in vals if isinstance(v, int)])
 
-        # Fallback: resolver por code (sin IDs duros) si no existe regla
-        unresolved = set(raw_types) - set(rules.mapped('activity_type'))
+        # Fallback: resolver por code (sin IDs duros) para tipos sin regla efectiva
+        resolved_types = set()
+        if rules:
+            if 'sid_tag_id' in Rule._fields:
+                resolved_types = set(rules.filtered('sid_tag_id').mapped('activity_type'))
+            else:
+                resolved_types = set(rules.filtered(lambda r: bool(r.tag_id)).mapped('activity_type'))
+
+        unresolved = set(raw_types) - resolved_types
         for raw in unresolved:
             normalized = self._normalize_activity_type(raw)
             wanted_code = self.TAG_CODE_MAP.get(normalized)
             if not wanted_code:
                 continue
             tag = Tag.search([('code', '=', wanted_code)], limit=1)
+            if not tag:
+                tag = Tag.create({
+                    'code': wanted_code,
+                    'name': self.TAG_NAME_MAP.get(wanted_code, wanted_code.upper()),
+                })
             if tag:
                 result.add(tag.id)
 
@@ -267,8 +289,6 @@ class SaleActivity(models.Model):
             activities = self.env['sale.activity'].sudo().search([('sale_line_id', '=', line.id)])
             activity_types = activities.mapped('type')
             Tag, tag_ids = self._resolve_tag_ids_for_types(activity_types)
-            if not Tag:
-                continue
             if 'sid_activity_tag_ids' in line._fields:
                 line.write({'sid_activity_tag_ids': [(6, 0, tag_ids)]})
             self._sync_inventory_tags_from_sale_line(line, tag_ids, Tag._name)
