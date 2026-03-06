@@ -56,8 +56,7 @@
           <field name="expected_date" string="Fecha Esperada" optional="show"/>
         </xpath>
 
-        <xpath expr="//field[@name='sale_order_id']" position="move"/>
-        <xpath expr="//field[@name='user_id']" position="move"/>
+        <xpath expr="//field[@name='sale_order_id']" position="replace"/>
 
         <xpath expr="//tree[1]" position="attributes">
           <attribute name="multi_edit">true</attribute>
