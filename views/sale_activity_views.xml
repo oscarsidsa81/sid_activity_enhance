@@ -39,9 +39,9 @@
       <field name="model">sale.activity</field>
       <field name="inherit_id" ref="oct_so_line_info.view_activity_tree"/>
       <field name="arch" type="xml">
-        <!-- Eliminamos posiciones originales para reinsertar en orden controlado -->
+        <!-- Eliminamos posición original conocida para reinsertar en orden controlado.
+             `user_id` puede no existir en todas las variantes del árbol base. -->
         <xpath expr="//field[@name='sale_order_id']" position="replace"/>
-        <xpath expr="//field[@name='user_id']" position="replace"/>
 
         <xpath expr="//field[@name='picking_type_id']" position="before">
           <field name="name" string="Ref" optional="show"/>
