@@ -8,7 +8,6 @@
         <tree>
           <field name="activity_type"/>
           <field name="sid_tag_id"/>
-          <field name="tag_id" invisible="1"/>
           <field name="active"/>
         </tree>
       </field>
@@ -23,7 +22,6 @@
             <group>
               <field name="activity_type"/>
               <field name="sid_tag_id"/>
-          <field name="tag_id" invisible="1"/>
               <field name="active"/>
             </group>
           </sheet>
