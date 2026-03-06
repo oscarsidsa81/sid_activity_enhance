@@ -22,21 +22,32 @@ class SaleLineActivityWizard(models.TransientModel):
     )
 
     line_ids = fields.Many2many('sale.order.line', string='Sale Lines', readonly=True)
+    preview_activity_ids = fields.Many2many(
+        'sale.activity',
+        string='Activities in selected lines',
+        compute='_compute_existing_activities',
+        readonly=True,
+        store=False,
+    )
+    # Legacy compatibility: some clients/views may still post this field name.
     existing_activity_ids = fields.Many2many(
         'sale.activity',
-        string='Existing Activities',
+        string='Existing Activities (legacy)',
         compute='_compute_existing_activities',
         readonly=True,
         store=False,
     )
 
-    @api.depends_context('active_ids')
+    @api.depends('line_ids')
+    @api.depends_context('active_ids', 'active_model')
     def _compute_existing_activities(self):
         for wiz in self:
-            active_ids = wiz.env.context.get('active_ids', []) if wiz.env.context.get('active_model') == 'sale.order.line' else []
-            lines = wiz.env['sale.order.line'].browse(active_ids).exists()
-            wiz.line_ids = [(6, 0, lines.ids)]
+            lines = wiz.line_ids
+            if not lines and wiz.env.context.get('active_model') == 'sale.order.line':
+                active_ids = wiz.env.context.get('active_ids', [])
+                lines = wiz.env['sale.order.line'].browse(active_ids).exists()
             acts = wiz.env['sale.activity'].sudo().search([('sale_line_id', 'in', lines.ids)])
+            wiz.preview_activity_ids = [(6, 0, acts.ids)]
             wiz.existing_activity_ids = [(6, 0, acts.ids)]
 
 
@@ -45,6 +56,9 @@ class SaleLineActivityWizard(models.TransientModel):
         vals = super().default_get(fields_list)
         if self.env.context.get('active_model') != 'sale.order.line':
             return vals
+        active_ids = self.env.context.get('active_ids', [])
+        if active_ids:
+            vals['line_ids'] = [(6, 0, active_ids)]
         # Default instructions requested for the operator.
         vals['description'] = _('Revisar instrucciones en campo Comments de la linea de venta')
         return vals
@@ -59,7 +73,9 @@ class SaleLineActivityWizard(models.TransientModel):
         if self.env.context.get('active_model') != 'sale.order.line':
             raise UserError(_('This wizard can only be used from sale order lines.'))
 
-        sale_lines = self.env['sale.order.line'].browse(self.env.context.get('active_ids', [])).exists()
+        sale_lines = self.line_ids.exists()
+        if not sale_lines and self.env.context.get('active_model') == 'sale.order.line':
+            sale_lines = self.env['sale.order.line'].browse(self.env.context.get('active_ids', [])).exists()
         if not sale_lines:
             raise UserError(_('No sale order lines selected.'))
 
@@ -70,14 +86,27 @@ class SaleLineActivityWizard(models.TransientModel):
         Activity = self.env['sale.activity'].sudo()
 
         if self.operation == 'add':
+            existing = Activity.search([
+                ('sale_line_id', 'in', sale_lines.ids),
+                ('type', 'in', selected_types),
+            ])
+            duplicated_pairs = {(act.sale_line_id.id, act.type) for act in existing}
+            if duplicated_pairs:
+                details = []
+                for line in sale_lines:
+                    for act_type in selected_types:
+                        if (line.id, act_type) in duplicated_pairs:
+                            details.append(_('- Línea %s ya tiene actividad tipo "%s"') % (
+                                line.display_name, act_type,
+                            ))
+                if details:
+                    raise UserError(_(
+                        'Ya existen actividades del mismo tipo en algunas líneas seleccionadas.\n\n%s\n\n'
+                        'Usa la operación "Remove selected activities" si deseas reemplazarlas.'
+                    ) % ('\n'.join(details[:30])))
+
             for line in sale_lines:
                 for act_type in selected_types:
-                    exists = Activity.search([
-                        ('sale_line_id', '=', line.id),
-                        ('type', '=', act_type),
-                    ], limit=1)
-                    if exists:
-                        continue
                     Activity.create({
                         'sale_line_id': line.id,
                         'type': act_type,
