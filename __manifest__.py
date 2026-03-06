@@ -1,8 +1,8 @@
 {
     'name': 'sid_activity_enhance',
-    'version': '15.0.1.0.8',
+    'version': '15.0.2.0.0',
     'category': 'Sales',
-    'summary': 'Personalizaciones de sale.activity (campos, vistas y lógicas) trasladadas a módulo.',
+    'summary': 'Rebase estable de sale.activity respetando la mecánica original.',
     'author': 'SIDSA',
     'license': 'LGPL-3',
     'depends': [
@@ -18,6 +18,7 @@
         'views/sale_activity_views.xml',
         'views/sale_activity_tag_rule_views.xml',
         'views/sale_line_activity_wizard_views.xml',
+        'views/sale_line_activity_integration_views.xml',
     ],
     'post_init_hook': 'post_init_hook',
     'installable': True,
