@@ -73,7 +73,9 @@ class SaleLineActivityWizard(models.TransientModel):
         if self.env.context.get('active_model') != 'sale.order.line':
             raise UserError(_('This wizard can only be used from sale order lines.'))
 
-        sale_lines = self.env['sale.order.line'].browse(self.env.context.get('active_ids', [])).exists()
+        sale_lines = self.line_ids.exists()
+        if not sale_lines and self.env.context.get('active_model') == 'sale.order.line':
+            sale_lines = self.env['sale.order.line'].browse(self.env.context.get('active_ids', [])).exists()
         if not sale_lines:
             raise UserError(_('No sale order lines selected.'))
 
