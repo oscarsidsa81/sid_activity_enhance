@@ -20,14 +20,10 @@
           </group>
           <notebook>
             <page string="Activities">
-              <field name="preview_activity_ids" nolabel="1" context="{'tree_view_ref': 'sid_activity_enhance.sid_view_sale_activity_tree_ov'}">
+              <field name="preview_activity_ids" nolabel="1">
                 <tree editable="false">
-                  <field name="name"/>
                   <field name="sale_line_id"/>
-                  <field name="sale_order_id"/>
                   <field name="type"/>
-                  <field name="stage"/>
-                  <field name="picking_type_id"/>
                   <field name="user_id"/>
                   <field name="date"/>
                   <field name="description"/>
