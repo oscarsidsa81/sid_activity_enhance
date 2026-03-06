@@ -24,3 +24,13 @@ class SaleOrderLine(models.Model):
         }
         result['context'] = {'active_model': 'sale.order.line', 'active_ids': self.ids}
         return result
+
+    def init(self):
+        self.env.cr.execute("""
+            CREATE INDEX IF NOT EXISTS idx_sid_sale_line_activity_tag_rel_line
+            ON sid_sale_line_activity_tag_rel (sale_line_id)
+        """)
+        self.env.cr.execute("""
+            CREATE INDEX IF NOT EXISTS idx_sid_sale_line_activity_tag_rel_tag
+            ON sid_sale_line_activity_tag_rel (tag_id)
+        """)

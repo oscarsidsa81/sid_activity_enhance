@@ -1,6 +1,6 @@
 {
     'name': 'sid_activity_enhance',
-    'version': '15.0.2.0.0',
+    'version': '15.0.2.1.0',
     'category': 'Sales',
     'summary': 'Rebase estable de sale.activity respetando la mecánica original.',
     'author': 'SIDSA',
