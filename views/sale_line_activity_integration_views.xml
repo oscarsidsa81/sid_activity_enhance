@@ -10,9 +10,9 @@
         <xpath expr="//tree" position="inside">
           <header>
             <button name="action_open_sid_batch_activities"
-                    string="sid - Batch Activities"
-                    type="object"
-                    class="btn-primary"
+                    string="Sid - Batch Activities"
+                    type="action"
+                    class="btn-info"
                     display="always"/>
           </header>
         </xpath>
@@ -22,14 +22,15 @@
     <record id="sid_view_sale_order_form_wizard_button" model="ir.ui.view">
       <field name="name">sid.sale.order.form.wizard.button</field>
       <field name="model">sale.order</field>
-      <field name="inherit_id" ref="sale.view_order_form"/>
+      <field name="inherit_id" ref="sale.sale_order_line_view_form_readonly"/>
       <field name="priority">90</field>
       <field name="arch" type="xml">
         <xpath expr="//header" position="inside">
           <button name="action_open_sid_batch_activities"
-                  type="object"
-                  string="sid - Batch Activities"
-                  class="btn-secondary"/>
+                  type="action"
+                  string="Batch Activities"
+                  class="btn-info"
+                  display="always"/>
         </xpath>
       </field>
     </record>

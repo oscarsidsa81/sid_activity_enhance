@@ -3,7 +3,7 @@ from odoo import fields, models
 
 class SidActivityTag(models.Model):
     _name = 'sid.activity.tag'
-    _description = 'SID Activity Tag'
+    _description = 'Activity Tag'
     _order = 'sequence, name, id'
 
     name = fields.Char(required=True, index=True)

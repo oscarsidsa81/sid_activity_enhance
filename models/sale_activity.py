@@ -15,12 +15,12 @@ class SaleActivity(models.Model):
         copy=False,
     )
 
-    sid_item = fields.Char(string='Item', compute='_compute_sid_fields', store=True, readonly=True)
-    sid_qty = fields.Float(string='Cantidad solicitada', compute='_compute_sid_fields', store=True, readonly=True)
-    sid_peso = fields.Float(string='Peso unitario', compute='_compute_sid_fields', store=True, readonly=True)
-    sid_peso_total = fields.Float(string='Peso total', compute='_compute_sid_fields', store=True, readonly=True)
-    sid_desc_sale_line = fields.Text(string='Descripción venta', compute='_compute_sid_fields', store=True, readonly=True)
-    sid_fecha_venta = fields.Datetime(string='Fecha contractual venta', compute='_compute_sid_fields', store=True, readonly=True)
+    sid_item = fields.Char(string='Item', related='sale_line_id.item', store=True, readonly=True)
+    sid_qty = fields.Float(string='Cantidad solicitada', related='sale_line_id.product_uom_qty', store=False, readonly=True)
+    sid_peso = fields.Float(string='Peso unitario', related='product_id.weight', store=False, readonly=True)
+    sid_peso_total = fields.Float(string='Peso total', compute='_compute_weight_fields', store=False, readonly=True)
+    sid_desc_sale_line = fields.Text(string='Descripción venta', related='sale_line_id.name', store=False, readonly=True)
+    sid_fecha_venta = fields.Datetime(string='Fecha contractual venta', related='sale_line_id.calculated_date', store=True, readonly=True)
 
     TAG_NAME_MAP = {
         'mecanizar': 'MECANIZAR',
@@ -40,26 +40,12 @@ class SaleActivity(models.Model):
     }
 
     @api.depends(
-        'sale_line_id',
-        'sale_line_id.product_uom_qty',
-        'sale_line_id.name',
-        'sale_line_id.sequence',
-        'sale_line_id.order_id.date_order',
-        'sale_line_id.order_id.commitment_date',
-        'product_id',
-        'product_id.weight',
+        'sid_qty',
+        'sid_peso',
     )
-    def _compute_sid_fields(self):
-        for rec in self:
-            line = rec.sale_line_id
-            rec.sid_item = (getattr(rec, 'x_item', False) or (line and (getattr(line, 'item', False) or line.sequence or line.id)) or '')
-            rec.sid_qty = getattr(rec, 'x_qty', False) or (line.product_uom_qty if line and 'product_uom_qty' in line._fields else 0.0) or 0.0
-            rec.sid_peso = getattr(rec, 'x_peso', False) or (rec.product_id.weight if rec.product_id and 'weight' in rec.product_id._fields else 0.0) or 0.0
-            rec.sid_peso_total = rec.sid_qty * rec.sid_peso
-            rec.sid_desc_sale_line = getattr(rec, 'x_desc_sale_line', False) or (line.name if line and 'name' in line._fields else '') or ''
-            rec.sid_fecha_venta = getattr(rec, 'x_fecha_venta', False) or (
-                line and line.order_id and (getattr(line.order_id, 'commitment_date', False) or getattr(line.order_id, 'date_order', False))
-            )
+    def _compute_weight_fields(self):
+        for record in self :
+            record['sid_peso_total'] = record.sid_weight * record.sid_qty
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -109,7 +95,7 @@ class SaleActivity(models.Model):
         route = self.sale_line_route
         if not route:
             return self.env['stock.picking.type']
-        rules = route.sudo().rule_ids.sorted(lambda r: (r.sequence, r.id))
+        rules = route.rule_ids.sorted(lambda r: (r.sequence, r.id))
         cert_rules = rules.filtered(lambda r: r.picking_type_id and getattr(r.picking_type_id, 'is_certificate_type', False))
         return cert_rules[:1].mapped('picking_type_id')
 
@@ -167,6 +153,7 @@ class SaleActivity(models.Model):
             if moves and 'sid_activity_tag_ids' in Move._fields:
                 moves.write({'sid_activity_tag_ids': [(6, 0, tag_ids)]})
 
+    # TODO esto parece que no se usa, hay q ver el cambio de estados de sale.activity
     def action_mark_done(self):
         self.write({'stage': 'done'})
         return True

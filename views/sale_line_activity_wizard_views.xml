@@ -21,6 +21,7 @@
           <group string="Actividades existentes">
             <field name="preview_activity_ids" nolabel="1">
               <tree>
+                <field name="sid_item"/>
                 <field name="sale_line_id"/>
                 <field name="type"/>
                 <field name="picking_type_id"/>
@@ -40,7 +41,7 @@
     </record>
 
     <record id="sid_action_sale_line_activity_wizard" model="ir.actions.act_window">
-      <field name="name">sid - Batch Activities</field>
+      <field name="name">Sid - Batch Activities</field>
       <field name="res_model">sale.line.activity.wizard</field>
       <field name="view_mode">form</field>
       <field name="target">new</field>

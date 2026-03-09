@@ -24,3 +24,4 @@ class SaleActivityTagRule(models.Model):
     _sql_constraints = [
         ('activity_type_unique', 'unique(activity_type)', 'Only one tag rule per activity type is allowed.'),
     ]
+# TODO revisar para qué vale esto

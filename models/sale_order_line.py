@@ -17,7 +17,7 @@ class SaleOrderLine(models.Model):
         action = self.env.ref('sid_activity_enhance.sid_action_sale_line_activity_wizard', raise_if_not_found=False)
         result = action.read()[0] if action else {
             'type': 'ir.actions.act_window',
-            'name': 'sid - Batch Activities',
+            'name': 'Asignar Actividades',
             'res_model': 'sale.line.activity.wizard',
             'view_mode': 'form',
             'target': 'new',
