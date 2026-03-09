@@ -8,7 +8,7 @@ class StockMove(models.Model):
         comodel_name='sid.activity.tag',
         relation='sid_stock_move_activity_tag_rel',
         column1='move_id',
-        column2='legacy_tag_id',
+        column2='tag_id',
         string='Tags actividades',
         help='Tags derivados de actividades asociadas a la línea de venta.',
     )
