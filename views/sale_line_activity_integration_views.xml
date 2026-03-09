@@ -8,19 +8,16 @@
       <field name="priority">90</field>
       <field name="arch" type="xml">
         <xpath expr="//tree" position="inside">
-          <header>
             <button name="action_open_sid_batch_activities"
-                    string="Sid - Batch Activities"
+                    string="Sid Batch"
                     type="object"
-                    class="btn-info"
-                    display="always"/>
-          </header>
+                    class="btn-info"/>
         </xpath>
       </field>
     </record>
 
     <record id="sid_view_sale_order_form_wizard_button" model="ir.ui.view">
-      <field name="name">sid.sale.order.form.wizard.button</field>
+      <field name="name">sid.sale.order.line.form.wizard.button</field>
       <field name="model">sale.order.line</field>
       <field name="inherit_id" ref="sale.sale_order_line_view_form_readonly"/>
       <field name="priority">90</field>
