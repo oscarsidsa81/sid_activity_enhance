@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <data>
+    <record id="sid_view_sale_order_line_tree_tags" model="ir.ui.view">
+      <field name="name">sid.sale.order.line.tree.tags</field>
+      <field name="model">sale.order.line</field>
+      <field name="inherit_id" ref="sale.view_order_line_tree"/>
+      <field name="priority">95</field>
+      <field name="arch" type="xml">
+        <xpath expr="//tree" position="inside">
+          <field name="sid_activity_tag_ids" widget="many2many_tags" optional="show" options="{'color_field': 'color'}"/>
+        </xpath>
+      </field>
+    </record>
+
+    <record id="sid_view_sale_order_line_form_tags" model="ir.ui.view">
+      <field name="name">sid.sale.order.line.form.tags</field>
+      <field name="model">sale.order.line</field>
+      <field name="inherit_id" ref="sale.sale_order_line_view_form_readonly"/>
+      <field name="priority">95</field>
+      <field name="arch" type="xml">
+        <xpath expr="//form/sheet/group" position="inside">
+          <field name="sid_activity_tag_ids" widget="many2many_tags" options="{'color_field': 'color'}" readonly="1"/>
+        </xpath>
+      </field>
+    </record>
+  </data>
+</odoo>

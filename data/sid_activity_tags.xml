@@ -1,74 +1,87 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo noupdate="1">
-    <!-- Tags estables (no Studio). El campo `code` se usa para el mapeo desde sale.activity.type -->
     <record id="sid_activity_tag_mecanizar" model="sid.activity.tag">
         <field name="code">mecanizar</field>
         <field name="name">MECANIZAR</field>
         <field name="sequence">10</field>
+        <field name="color">1</field>
     </record>
     <record id="sid_activity_tag_cortar" model="sid.activity.tag">
         <field name="code">cortar</field>
         <field name="name">CORTAR</field>
         <field name="sequence">20</field>
+        <field name="color">2</field>
     </record>
     <record id="sid_activity_tag_roscar" model="sid.activity.tag">
         <field name="code">roscar</field>
         <field name="name">ROSCAR</field>
         <field name="sequence">30</field>
+        <field name="color">3</field>
     </record>
     <record id="sid_activity_tag_biselar" model="sid.activity.tag">
         <field name="code">biselar</field>
         <field name="name">BISELAR</field>
         <field name="sequence">40</field>
+        <field name="color">4</field>
     </record>
     <record id="sid_activity_tag_ranurar" model="sid.activity.tag">
         <field name="code">ranurar</field>
         <field name="name">RANURAR</field>
         <field name="sequence">50</field>
+        <field name="color">5</field>
     </record>
     <record id="sid_activity_tag_pintar" model="sid.activity.tag">
         <field name="code">pintar</field>
         <field name="name">3LPE / PINTAR</field>
         <field name="sequence">60</field>
+        <field name="color">6</field>
     </record>
     <record id="sid_activity_tag_curvar" model="sid.activity.tag">
         <field name="code">curvar</field>
         <field name="name">CURVAR</field>
         <field name="sequence">70</field>
+        <field name="color">7</field>
     </record>
     <record id="sid_activity_tag_galvanizar" model="sid.activity.tag">
         <field name="code">galvanizar</field>
         <field name="name">GALVANIZAR</field>
         <field name="sequence">80</field>
+        <field name="color">8</field>
     </record>
     <record id="sid_activity_tag_ensayos" model="sid.activity.tag">
         <field name="code">ensayos</field>
         <field name="name">ENSAYOS</field>
         <field name="sequence">90</field>
+        <field name="color">9</field>
     </record>
     <record id="sid_activity_tag_montaje" model="sid.activity.tag">
         <field name="code">montaje</field>
         <field name="name">MONTAJE</field>
         <field name="sequence">100</field>
+        <field name="color">10</field>
     </record>
     <record id="sid_activity_tag_inspeccion_interna" model="sid.activity.tag">
         <field name="code">inspeccion interna</field>
         <field name="name">INSPECCION INTERNA</field>
         <field name="sequence">110</field>
+        <field name="color">11</field>
     </record>
     <record id="sid_activity_tag_inspeccion_cliente" model="sid.activity.tag">
         <field name="code">inspeccion cliente</field>
         <field name="name">INSPECCION CLIENTE</field>
         <field name="sequence">120</field>
+        <field name="color">12</field>
     </record>
     <record id="sid_activity_tag_inspeccion" model="sid.activity.tag">
         <field name="code">inspeccion</field>
         <field name="name">INSPECCION</field>
         <field name="sequence">130</field>
+        <field name="color">13</field>
     </record>
     <record id="sid_activity_tag_taller" model="sid.activity.tag">
         <field name="code">taller</field>
         <field name="name">TALLER</field>
         <field name="sequence">140</field>
+        <field name="color">14</field>
     </record>
 </odoo>

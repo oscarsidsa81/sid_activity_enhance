@@ -5,20 +5,11 @@ from odoo.exceptions import UserError
 class SaleActivity(models.Model):
     _inherit = 'sale.activity'
 
-    # Mantener la mecánica original: el campo operativo clave sigue siendo
-    # picking_type_id. Añadimos una referencia real y campos auxiliares, pero
-    # no desplazamos el comportamiento base de oct_so_line_info.
     name = fields.Char(
         string='Referencia',
         default=lambda self: self.env['ir.sequence'].sudo().next_by_code('sale.activity'),
         readonly=True,
         copy=False,
-    )
-    type = fields.Selection (
-        selection_add=[
-            ('colada', 'COLADA'),
-        ],
-        ondelete={'colada' : 'set null'},
     )
     sid_item = fields.Char(string='Item', related='sale_line_id.item', store=True, readonly=True)
     sid_qty = fields.Float(string='Cantidad solicitada', related='sale_line_id.product_uom_qty', store=False, readonly=True)
@@ -44,13 +35,10 @@ class SaleActivity(models.Model):
         'taller': 'TALLER',
     }
 
-    @api.depends(
-        'sid_qty',
-        'sid_peso',
-    )
+    @api.depends('sid_qty', 'sid_peso')
     def _compute_weight_fields(self):
-        for record in self :
-            record['sid_peso_total'] = record.sid_peso * record.sid_qty
+        for record in self:
+            record.sid_peso_total = record.sid_peso * record.sid_qty
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -91,8 +79,7 @@ class SaleActivity(models.Model):
             ], limit=1)
             if dup:
                 raise UserError(_(
-                    'Este item %s ya tiene una actividad del tipo %s. '
-                    'Incluye en la descripción de la actividad todos los trabajos relacionados.'
+                    'Este item %s ya tiene una actividad del tipo %s. Incluye en la descripción de la actividad todos los trabajos relacionados.'
                 ) % ((rec.sid_item or rec.sale_line_id.display_name or ''), rec.type))
 
     def _get_route_certificate_picking_type(self):
@@ -100,14 +87,12 @@ class SaleActivity(models.Model):
         route = self.sale_line_route
         if not route:
             return self.env['stock.picking.type']
-        rules = route.rule_ids.sorted(lambda r: (r.sequence, r.id))
-        cert_rules = rules.filtered(lambda r: r.picking_type_id and getattr(r.picking_type_id, 'is_certificate_type', False))
-        return cert_rules[:1].mapped('picking_type_id')
+        cert_rule = route.rule_ids.sorted(lambda r: (r.sequence, r.id)).filtered(
+            lambda r: r.picking_type_id and getattr(r.picking_type_id, 'is_certificate_type', False)
+        )[:1]
+        return cert_rule.picking_type_id
 
     def _autofill_picking_type_from_route(self):
-        # Rebase: respetar la mecánica histórica centrada en certificados.
-        # Solo autocompletamos cuando la ruta contemple un picking_type marcado
-        # como `is_certificate_type`. Si no existe, dejamos el valor tal como esté.
         for rec in self.filtered(lambda r: r.sale_line_route and not r.picking_type_id):
             picking_type = rec._get_route_certificate_picking_type()
             if picking_type:
@@ -158,7 +143,6 @@ class SaleActivity(models.Model):
             if moves and 'sid_activity_tag_ids' in Move._fields:
                 moves.write({'sid_activity_tag_ids': [(6, 0, tag_ids)]})
 
-    # TODO esto parece que no se usa, hay q ver el cambio de estados de sale.activity
     def action_mark_done(self):
         self.write({'stage': 'done'})
         return True

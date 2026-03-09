@@ -1,32 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
-        <record id="sid_view_sale_order_line_tree_wizard_button" model="ir.ui.view">
-            <field name="name">sid.sale.order.line.tree.wizard.button</field>
-            <field name="model">sale.order.line</field>
-            <field name="inherit_id" ref="sale.view_order_line_tree"/>
-            <field name="priority">90</field>
-            <field name="arch" type="xml">
-                <xpath expr="//tree" position="inside">
-                    <button name="action_open_sid_batch_activities"
-                            string="Sid Batch"
-                            type="object"
-                            class="btn-info"/>
-                </xpath>
-            </field>
-        </record>
-
         <record id="sid_view_sale_order_line_form_wizard_button" model="ir.ui.view">
             <field name="name">sid.sale.order.line.form.wizard.button</field>
             <field name="model">sale.order.line</field>
             <field name="inherit_id" ref="sale.sale_order_line_view_form_readonly"/>
             <field name="priority">90</field>
             <field name="arch" type="xml">
-                <xpath expr="//form/sheet" position="before">
-                    <button name="action_open_sid_batch_activities"
-                            type="object"
-                            string="Batch Activities"
-                            class="btn-info"/>
+                <xpath expr="//form" position="inside">
+                    <header>
+                        <button name="action_open_sid_batch_activities"
+                                type="object"
+                                string="Batch Activities"
+                                class="btn-info"/>
+                    </header>
                 </xpath>
             </field>
         </record>

@@ -13,7 +13,7 @@
             <field name="description" attrs="{'invisible': [('operation', '=', 'remove')]}"/>
           </group>
           <group>
-            <field name="activity_type_ids" widget="many2many_tags" options="{'no_create_edit': True}"/>
+            <field name="activity_type_ids" widget="many2many_tags" options="{'no_create_edit': True, 'color_field': 'color'}"/>
           </group>
           <group string="Líneas seleccionadas">
             <field name="line_ids" widget="many2many_tags" options="{'no_create_edit': True}"/>
