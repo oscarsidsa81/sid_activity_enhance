@@ -21,7 +21,7 @@
 
     <record id="sid_view_sale_order_form_wizard_button" model="ir.ui.view">
       <field name="name">sid.sale.order.form.wizard.button</field>
-      <field name="model">sale.order</field>
+      <field name="model">sale.order.line</field>
       <field name="inherit_id" ref="sale.sale_order_line_view_form_readonly"/>
       <field name="priority">90</field>
       <field name="arch" type="xml">
