@@ -11,7 +11,7 @@
           <header>
             <button name="action_open_sid_batch_activities"
                     string="Sid - Batch Activities"
-                    type="action"
+                    type="object"
                     class="btn-info"
                     display="always"/>
           </header>
@@ -27,7 +27,7 @@
       <field name="arch" type="xml">
         <xpath expr="//header" position="inside">
           <button name="action_open_sid_batch_activities"
-                  type="action"
+                  type="object"
                   string="Batch Activities"
                   class="btn-info"
                   display="always"/>
