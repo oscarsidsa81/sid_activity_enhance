@@ -32,5 +32,5 @@ class SaleOrderLine(models.Model):
         """)
         self.env.cr.execute("""
             CREATE INDEX IF NOT EXISTS idx_sid_sale_line_activity_tag_rel_tag
-            ON sid_sale_line_activity_tag_rel (tag_id_legacy)
+            ON sid_sale_line_activity_tag_rel (tag_id)
         """)

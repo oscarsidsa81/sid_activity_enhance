@@ -27,5 +27,5 @@ class StockMove(models.Model):
         """)
         self.env.cr.execute("""
             CREATE INDEX IF NOT EXISTS idx_sid_stock_move_activity_tag_rel_tag
-            ON sid_stock_move_activity_tag_rel (tag_id_legacy)
+            ON sid_stock_move_activity_tag_rel (tag_id)
         """)
