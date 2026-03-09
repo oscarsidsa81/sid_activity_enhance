@@ -8,7 +8,7 @@ class SaleOrderLine(models.Model):
         comodel_name='sid.activity.tag',
         relation='sid_sale_line_activity_tag_rel',
         column1='sale_line_id',
-        column2='tag_id_legacy',
+        column2='tag_id',
         string='Tags actividades',
         help='Tags derivados de los tipos de actividades vinculadas a la línea.',
     )
