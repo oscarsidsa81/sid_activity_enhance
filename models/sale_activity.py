@@ -11,6 +11,12 @@ class SaleActivity(models.Model):
         readonly=True,
         copy=False,
     )
+    type = fields.Selection (
+        selection_add=[
+            ('colada', 'COLADA'),
+        ],
+        ondelete={'colada' : 'set null'},
+    )
     sid_item = fields.Char(string='Item', related='sale_line_id.item', store=True, readonly=True)
     sid_qty = fields.Float(string='Cantidad solicitada', related='sale_line_id.product_uom_qty', store=False, readonly=True)
     sid_peso = fields.Float(string='Peso unitario', related='product_id.weight', store=False, readonly=True)

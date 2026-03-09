@@ -7,7 +7,7 @@
       <field name="inherit_id" ref="sale.view_order_line_tree"/>
       <field name="priority">95</field>
       <field name="arch" type="xml">
-        <xpath expr="//tree" position="inside">
+        <xpath expr="//field[@name='comments']" position="before">
           <field name="sid_activity_tag_ids" widget="many2many_tags" optional="show" options="{'color_field': 'color'}"/>
         </xpath>
       </field>
