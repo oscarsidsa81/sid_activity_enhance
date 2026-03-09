@@ -54,42 +54,105 @@ def _backfill_picking_type(env):
 
 def _migrate_legacy_tags(env):
     stats = {'sol_updated': 0, 'move_updated': 0, 'unmapped': set()}
+
     if 'x_stock.move.tags' not in env:
         return stats
+
     Legacy = env['x_stock.move.tags'].sudo()
     Tag = env['sid.activity.tag'].sudo()
+
     tag_map = {}
+
+    # -----------------------------------------
+    # 1. construir mapa por code usando TAG_DATA
+    # -----------------------------------------
+
+    code_to_name = {code: name for code, name, _seq in TAG_DATA}
+
+    code_map = {}
+    for tag in Tag.search([]):
+        if tag.code:
+            code_map[tag.code.lower()] = tag.id
+
+    name_map = {}
+    for tag in Tag.search([]):
+        if tag.name:
+            name_map[tag.name.strip().lower()] = tag.id
+
+    # -----------------------------------------
+    # 2. mapear legacy
+    # -----------------------------------------
+
     for legacy in Legacy.search([]):
         name = (legacy.display_name or legacy.name or '').strip()
+
         if not name:
             continue
-        new = Tag.search([('name', '=ilike', name)], limit=1)
-        if new:
-            tag_map[legacy.id] = new.id
+
+        key = name.lower()
+
+        new_id = None
+
+        # 2.1 intentar mapear por code
+        for code, expected_name in code_to_name.items():
+            if key == expected_name.lower():
+                new_id = code_map.get(code.lower())
+                if new_id:
+                    break
+
+        # 2.2 fallback por nombre
+        if not new_id:
+            new_id = name_map.get(key)
+
+        if new_id:
+            tag_map[legacy.id] = new_id
         else:
             stats['unmapped'].add(name)
 
+    # -----------------------------------------
+    # 3. migrar sale.order.line
+    # -----------------------------------------
+
     SOL = env['sale.order.line'].sudo()
+
     if 'x_sale_line_tags' in SOL._fields and 'sid_activity_tag_ids' in SOL._fields:
+
         for line in SOL.search([('x_sale_line_tags', '!=', False)]):
+
             ids = [tag_map.get(tid) for tid in line.x_sale_line_tags.ids]
             ids = sorted(set([i for i in ids if i]))
+
             if ids:
                 line.write({'sid_activity_tag_ids': [(6, 0, ids)]})
                 stats['sol_updated'] += 1
 
+    # -----------------------------------------
+    # 4. migrar stock.move (fusionando campos)
+    # -----------------------------------------
+
     Move = env['stock.move'].sudo()
+
     if 'sid_activity_tag_ids' in Move._fields:
-        legacy_fields = [f for f in ('x_tags_activities', 'x_activity_tags', 'x_sale_line_tags') if f in Move._fields]
-        for f in legacy_fields:
-            for mv in Move.search([(f, '!=', False)]):
-                ids = [tag_map.get(tid) for tid in mv[f].ids]
-                ids = sorted(set([i for i in ids if i]))
-                if ids:
-                    mv.write({'sid_activity_tag_ids': [(6, 0, ids)]})
-                    stats['move_updated'] += 1
-            if legacy_fields:
-                break
+
+        legacy_fields = [
+            f for f in ('x_tags_activities', 'x_activity_tags', 'x_sale_line_tags')
+            if f in Move._fields
+        ]
+
+        for mv in Move.search([]):
+
+            ids = set()
+
+            for f in legacy_fields:
+
+                if mv[f]:
+                    mapped = [tag_map.get(tid) for tid in mv[f].ids]
+                    ids.update([i for i in mapped if i])
+
+            if ids:
+                mv.write({'sid_activity_tag_ids': [(6, 0, sorted(ids))]})
+                stats['move_updated'] += 1
+
     return stats
 
 

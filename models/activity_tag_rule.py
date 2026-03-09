@@ -14,6 +14,7 @@ class SaleActivityTagRule(models.Model):
     activity_type = fields.Selection(selection='_selection_activity_type', required=True, index=True)
     legacy_tag_name = fields.Char(string='Legacy tag name')
     sid_tag_id = fields.Many2one('sid.activity.tag', string='Tag', ondelete='restrict', index=True, required=True)
+    tag_id_legacy = fields.Integer(string='Legacy tag', default=0, store=True, readonly=True)
 
     @api.onchange('sid_tag_id')
     def _onchange_sid_tag_id(self):

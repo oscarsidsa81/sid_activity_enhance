@@ -45,7 +45,7 @@ class SaleActivity(models.Model):
     )
     def _compute_weight_fields(self):
         for record in self :
-            record['sid_peso_total'] = record.sid_weight * record.sid_qty
+            record['sid_peso_total'] = record.sid_peso * record.sid_qty
 
     @api.model_create_multi
     def create(self, vals_list):

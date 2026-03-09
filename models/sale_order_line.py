@@ -8,7 +8,7 @@ class SaleOrderLine(models.Model):
         comodel_name='sid.activity.tag',
         relation='sid_sale_line_activity_tag_rel',
         column1='sale_line_id',
-        column2='tag_id',
+        column2='tag_id_legacy',
         string='Tags actividades',
         help='Tags derivados de los tipos de actividades vinculadas a la línea.',
     )
@@ -32,5 +32,5 @@ class SaleOrderLine(models.Model):
         """)
         self.env.cr.execute("""
             CREATE INDEX IF NOT EXISTS idx_sid_sale_line_activity_tag_rel_tag
-            ON sid_sale_line_activity_tag_rel (tag_id)
+            ON sid_sale_line_activity_tag_rel (tag_id_legacy)
         """)
