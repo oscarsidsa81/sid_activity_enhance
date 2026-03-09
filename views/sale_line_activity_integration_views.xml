@@ -22,7 +22,7 @@
             <field name="inherit_id" ref="sale.sale_order_line_view_form_readonly"/>
             <field name="priority">90</field>
             <field name="arch" type="xml">
-                <xpath expr="//header" position="inside">
+                <xpath expr="//form/sheet" position="before">
                     <button name="action_open_sid_batch_activities"
                             type="object"
                             string="Batch Activities"
