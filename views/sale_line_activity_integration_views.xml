@@ -8,12 +8,11 @@
             <field name="priority">90</field>
             <field name="arch" type="xml">
                 <xpath expr="//form/header" position="inside">
-                    <header>
                         <button name="action_open_sid_batch_activities"
                                 type="object"
                                 string="Batch Activities"
                                 class="btn-info"/>
-                    </header>
+<!--                        TODO revisar el backend error-->
                 </xpath>
             </field>
         </record>
