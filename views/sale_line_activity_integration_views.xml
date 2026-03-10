@@ -7,13 +7,13 @@
             <field name="inherit_id" ref="sale.sale_order_line_view_form_readonly"/>
             <field name="priority">90</field>
             <field name="arch" type="xml">
-               <xpath expr="//form/sheet" position="inside">
-                    <group>
+               <xpath expr="//form/sheet" position="before">
+                    <span>
                         <button name="action_open_sid_batch_activities"
                                 type="object"
                                 string="Batch Activities"
                                 class="btn-info"/>
-                    </group>
+                    </span>
                 </xpath>
             </field>
         </record>
