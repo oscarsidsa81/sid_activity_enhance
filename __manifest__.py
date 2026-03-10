@@ -3,7 +3,7 @@
     'version': '15.0.2.1.0',
     'category': 'Sales',
     'summary': 'Rebase estable de sale.activity respetando la mecánica original.',
-    'author': 'SIDSA',
+    'author': 'oscarsidsa81',
     'license': 'LGPL-3',
     'depends': [
         'sale',
