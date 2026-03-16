@@ -10,6 +10,8 @@
         'stock',
         'purchase',
         'oct_so_line_info',
+        'sid_sale_line_views_ov',
+        'sid_purchase_delay_sync',
         'oct_certificate_receptions',
     ],
     'data': [
