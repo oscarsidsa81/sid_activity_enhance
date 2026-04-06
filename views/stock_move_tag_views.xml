@@ -14,7 +14,7 @@
             </field>
         </record>
 
-        <record id="sid_view_stock_move_tree_tags" model="ir.ui.view">
+        <record id="sid_view_stock_move_tree_tags_asigna" model="ir.ui.view">
             <field name="name">sid.stock.move.activity.tree.tags</field>
             <field name="model">stock.move</field>
             <field name="inherit_id" ref="sid_stock_views_ov.view_stock_move_tree_ov"/>
