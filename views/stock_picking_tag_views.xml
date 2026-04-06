@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="sid_view_stock_picking_form_tags" model="ir.ui.view">
+            <field name="name">sid.stock.picking.form.tags</field>
+            <field name="model">stock.picking</field>
+            <field name="type">form</field>
+            <field name="inherit_id" ref="stock.view_picking_form"/>
+            <field name="priority">1001</field>
+            <field name="arch" type="xml">
+                <xpath expr="//notebook[1]//page[2]//tree[1]//field[@name='product_id']" position="before">
+                    <xpath expr="//button[@name='action_show_details']" position="move"/>
+                    <xpath expr="//field[@name='todo']" position="move"/>
+                    <xpath expr="//field[@name='item']" position="move"/>
+                    <field name="sid_activity_tag_ids" widget="many2many_tags" readonly="1" string="Actividades"
+                           options="{'color_field': 'color'}"/>
+                </xpath>
+            </field>
+        </record>
+
+    </data>
+</odoo>

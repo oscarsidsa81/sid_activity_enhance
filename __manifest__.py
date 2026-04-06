@@ -23,6 +23,7 @@
         'views/sale_line_activity_integration_views.xml',
         'views/sale_order_line_tag_views.xml',
         'views/stock_move_tag_views.xml',
+        'views/stock_picking_tag_views.xml',
     ],
     'post_init_hook': 'post_init_hook',
     'installable': True,
