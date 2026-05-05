@@ -16,6 +16,7 @@
     ],
     'data': [
         'security/ir.model.access.csv',
+        'data/sale_activity_sequence.xml',
         'data/sid_activity_tags.xml',
         'views/sale_activity_views.xml',
         'views/sale_activity_tag_rule_views.xml',
