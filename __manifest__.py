@@ -13,6 +13,7 @@
         'sid_sale_line_views_ov',
         'sid_purchase_delay_sync',
         'oct_certificate_receptions',
+        'sid_stock_views_ov',
     ],
     'data': [
         'security/ir.model.access.csv',
