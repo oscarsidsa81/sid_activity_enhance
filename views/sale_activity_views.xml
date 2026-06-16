@@ -60,6 +60,18 @@
       </field>
     </record>
 
+    <record id="sid_view_sale_activity_form_activity_anchor" model="ir.ui.view">
+      <field name="name">sid.sale.activity.form.activity.anchor</field>
+      <field name="model">sale.activity</field>
+      <field name="inherit_id" ref="oct_so_line_info.sale_view_activity_form"/>
+      <field name="priority">1</field>
+      <field name="arch" type="xml">
+        <xpath expr="//form" position="inside">
+          <field name="activity_ids" invisible="1"/>
+        </xpath>
+      </field>
+    </record>
+
     <record id="sid_view_sale_activity_form_sale_ov" model="ir.ui.view">
       <field name="name">sid.sale.activity.form.sale.ov</field>
       <field name="model">sale.activity</field>
