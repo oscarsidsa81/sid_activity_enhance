@@ -2,18 +2,18 @@
 <odoo>
     <data>
         <record id="sid_view_sale_order_line_form_wizard_button" model="ir.ui.view">
-            <field name="name">sid.sale.order.line.form.wizard.button</field>
+            <field name="name">sid.sale.order.line.tree.wizard.button</field>
             <field name="model">sale.order.line</field>
-            <field name="inherit_id" ref="sale.sale_order_line_view_form_readonly"/>
+            <field name="inherit_id" ref="sale.view_order_line_tree"/>
             <field name="priority">90</field>
             <field name="arch" type="xml">
-               <xpath expr="//form/sheet" position="before">
-                    <span>
+                <xpath expr="//tree" position="inside">
+                    <header>
                         <button name="action_open_sid_batch_activities"
                                 type="object"
-                                string="Batch Activities"
+                                string="SID - Batch Activities"
                                 class="btn-info"/>
-                    </span>
+                    </header>
                 </xpath>
             </field>
         </record>
