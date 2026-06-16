@@ -7,7 +7,6 @@
     'license': 'LGPL-3',
     'depends': [
         'sale',
-        'mail',
         'stock',
         'purchase',
         'oct_so_line_info',

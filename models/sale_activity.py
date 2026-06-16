@@ -3,7 +3,7 @@ from odoo.exceptions import UserError
 
 
 class SaleActivity(models.Model):
-    _inherit = ['sale.activity', 'mail.activity.mixin']
+    _inherit = 'sale.activity'
 
     name = fields.Char(
         string='Referencia',
